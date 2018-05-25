@@ -1,29 +1,44 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Psyche : MonoBehaviour {
 
-    [SerializeField]
-    private float psyche;
+    public delegate void OnPsycheChanged(float currentPsyche);
+    public event OnPsycheChanged OnPsycheChangedEvent;
 
     [SerializeField]
-    private float multiplierFireplace = 0;
+    private GameObject psycheStatus;
+    
+    [SerializeField]
+    private float psycheCurr = 1000;
+
+    [SerializeField]
+    private float fireplace = 0;
 
     [SerializeField]
     private float psycheLossSpeed = 1;
 
     // Use this for initialization
     void Start () {
-        psyche = 1000;
-
-        //subscribe to Update
-        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent += Psyche_OnUpdateEvent; ;
+        
+        InvokeRepeating("SubtractPsyche", 1f, 1f);
     }
 
-    private void Psyche_OnUpdateEvent()
+    private void SubtractPsyche()
     {
-        psyche -= psycheLossSpeed *(1 + multiplierFireplace) * Time.deltaTime;
+        if(psycheCurr != psycheCurr - fireplace)
+        {
+            if((psycheCurr - fireplace) < 0) { psycheCurr = 0; }
+            else
+            {
+                psycheCurr -= fireplace;
+            }
+            //event for status bars
+            OnPsycheChangedEvent(psycheCurr);
+        }
+        
     }
 
     //Start listening to item
@@ -36,11 +51,11 @@ public class Psyche : MonoBehaviour {
     {
         if(tier != 0)
         {
-            multiplierFireplace = tier;
+            fireplace = tier;
         }
         else
         {
-            multiplierFireplace = 0;
+            fireplace = 0;
         }
     }
 }

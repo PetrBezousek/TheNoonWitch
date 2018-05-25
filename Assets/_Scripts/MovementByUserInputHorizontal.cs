@@ -9,6 +9,8 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
     [SerializeField]
     private float speed = 30f;
 
+    private float moveValue = 0;
+
     void Start () {
         //subscribe to fixedUpdate
         GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnFixedUpdateEvent += UpdateManager_OnFixedUpdateEvent;       
@@ -16,13 +18,13 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
 
     //Fixed update
     private void UpdateManager_OnFixedUpdateEvent()
-    {   
+    {
         //player input (Left/Right)
-        float move = Input.GetAxis("Horizontal");
-        if (move != 0)
+        moveValue = Input.GetAxis("Horizontal");
+        if (moveValue != 0)
         {
             //move object left/right
-            transform.position = transform.position + (new Vector3(move*speed, 0, 0)* Time.deltaTime);
+            transform.position = transform.position + (new Vector3(moveValue * speed, 0, 0)* Time.deltaTime);
         }
     }
     

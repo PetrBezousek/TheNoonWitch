@@ -107,13 +107,13 @@ public class PickItems : MonoBehaviour {
     //Start listening to item
     public void SubscribeToNewItem(GameObject item)
     {
-        item.GetComponent<BroadcastItself>().OnUpdateNotifyAboutItselfEvent += PickItems_OnUpdateNotifyAboutItselfEvent;
+        item.GetComponent<BroadcastItselfToPlayer>().OnUpdateNotifyAboutItselfEvent += PickItems_OnUpdateNotifyAboutItselfEvent;
     }
 
     //Stop listening to item
     public void UnSubscribeToNewItem(GameObject item)
     {
-        item.GetComponent<BroadcastItself>().OnUpdateNotifyAboutItselfEvent -= PickItems_OnUpdateNotifyAboutItselfEvent;
+        item.GetComponent<BroadcastItselfToPlayer>().OnUpdateNotifyAboutItselfEvent -= PickItems_OnUpdateNotifyAboutItselfEvent;
     }
 
     //Pick nearest item and put on its position currently equiped item
@@ -172,9 +172,14 @@ public class PickItems : MonoBehaviour {
             if(equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Wood && place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Fireplace)
             {
                 return true;
-            }
+            } 
+            
         }
-        
+        // close/lock window 
+            if(place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Window)
+            {
+                return true;
+            }
         
         //Default false
         return false;
@@ -192,6 +197,19 @@ public class PickItems : MonoBehaviour {
                     case InteractiveItem.Names.Fireplace:
                         theClosestPlace.GetComponent<Fireplace>().AddWood();
                         Destroy(equipedItem);
+                        break;
+                    case InteractiveItem.Names.Window:
+                        
+                            if((equipedItem != null) && (equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch))
+                            {
+                                theClosestPlace.GetComponent<Window>().ChangeStateTo(Window.State.Latched);
+                                //dej petlici na okno
+                            }
+                            else if(theClosestPlace.GetComponent<Window>().windowState == Window.State.Opened)
+                            {
+                                theClosestPlace.GetComponent<Window>().ChangeStateTo(Window.State.Closed);
+                            }
+                            
                         break;
                 }
                

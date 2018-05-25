@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BroadcastItself : MonoBehaviour {
+public class BroadcastItselfToPlayer : MonoBehaviour {
 
     //Creating event 
     public delegate void OnUpdateNotifyAboutItself(GameObject sender);
