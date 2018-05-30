@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class PickItems : MonoBehaviour {
 
+    public delegate void OnItemUsed(GameObject sender);
+    public event OnItemUsed OnWindowUsedEvent;
+
     [SerializeField]
     [Range(0,30)]
     private int pickRange = 5;
@@ -19,10 +22,8 @@ public class PickItems : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-
         //subscribe to Update
-        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent += PickItems_OnUpdateEvent; 
-
+        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent += PickItems_OnUpdateEvent;
     }
 
     //Update
@@ -61,6 +62,7 @@ public class PickItems : MonoBehaviour {
         switch (sender.GetComponent<InteractiveItem>().type)
         {
             case InteractiveItem.Types.Pickable:
+
                 if (sender.GetComponent<InteractiveItem>().isPickable)
                 {
                     //Is item in range of player?
@@ -103,24 +105,14 @@ public class PickItems : MonoBehaviour {
         }
        
     }
-
-    //Start listening to item
-    public void SubscribeToNewItem(GameObject item)
-    {
-        item.GetComponent<BroadcastItselfToPlayer>().OnUpdateNotifyAboutItselfEvent += PickItems_OnUpdateNotifyAboutItselfEvent;
-    }
-
-    //Stop listening to item
-    public void UnSubscribeToNewItem(GameObject item)
-    {
-        item.GetComponent<BroadcastItselfToPlayer>().OnUpdateNotifyAboutItselfEvent -= PickItems_OnUpdateNotifyAboutItselfEvent;
-    }
-
+    
     //Pick nearest item and put on its position currently equiped item
     private void PickUpItem()
     {
         if(theClosestPickable != null)
         {
+            theClosestPickable.GetComponent<InteractiveItem>().SetOwner(gameObject);
+
             if (equipedItem != null)
             {
                 //přiřadím stav (kvůli tomu, aby se neposílali broadcasty)
@@ -136,8 +128,7 @@ public class PickItems : MonoBehaviour {
                 //prohodím pozice fyzicky      
                 theClosestPickable.transform.parent = null;
                 theClosestPickable.transform.position = equipedItem.transform.position;
-                equipedItem.transform.parent = playersHand.transform;
-                equipedItem.transform.localPosition = new Vector3(0, 0, 0);
+                SetEquipedItemToPosition(playersHand.transform);
                 // equipedItem.transform.position = theClosestItem.transform.position;
 
                 // equipedItem.transform.position = theClosestItem.transform.position;
@@ -157,9 +148,7 @@ public class PickItems : MonoBehaviour {
                 theClosestPickable = null;
 
                 //fyzika
-                equipedItem.transform.parent = playersHand.transform;
-                equipedItem.transform.localPosition = new Vector3(0, 0, 0);
-                
+                SetEquipedItemToPosition(playersHand.transform);
             }
         }
     }
@@ -176,11 +165,25 @@ public class PickItems : MonoBehaviour {
             
         }
         // close/lock window 
-            if(place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Window)
-            {
-                return true;
-            }
-        
+        if((place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Window)
+        &&(place.GetComponent<Window>().windowState == Window.State.Opened)
+        ||
+        (place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Window)
+        && (place.GetComponent<Window>().windowState == Window.State.Closed)
+        && (equipedItem != null) && (equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch))
+        {
+            return true;
+        }
+        // child 
+        if ((place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Child)
+        && (equipedItem != null) 
+        && (!place.GetComponent<Child>().isHavingToy)
+        && ((equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Husar)
+        || equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Kohout))
+        {
+            return true;
+        }
+
         //Default false
         return false;
     }
@@ -199,17 +202,31 @@ public class PickItems : MonoBehaviour {
                         Destroy(equipedItem);
                         break;
                     case InteractiveItem.Names.Window:
-                        
-                            if((equipedItem != null) && (equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch))
-                            {
-                                theClosestPlace.GetComponent<Window>().ChangeStateTo(Window.State.Latched);
-                                //dej petlici na okno
-                            }
-                            else if(theClosestPlace.GetComponent<Window>().windowState == Window.State.Opened)
-                            {
-                                theClosestPlace.GetComponent<Window>().ChangeStateTo(Window.State.Closed);
-                            }
-                            
+
+                        if (equipedItem != null)
+                        {
+                            equipedItem.GetComponent<InteractiveItem>().SetOwner(theClosestPlace);
+                        }
+
+                        //window listens to this
+                        OnWindowUsedEvent(gameObject);
+                        break;
+                    case InteractiveItem.Names.Child:
+
+                        if (equipedItem != null)
+                        {
+                            equipedItem.GetComponent<InteractiveItem>().SetOwner(theClosestPlace);
+                        }
+
+                        theClosestPlace.GetComponent<Child>().isHavingToy = true;
+                        theClosestPlace.GetComponent<Child>().Scream();
+
+                        //position
+                        equipedItem.transform.parent = theClosestPlace.transform;
+                        equipedItem.transform.localPosition = new Vector3(0, 0, 0);
+
+                        equipedItem.GetComponent<InteractiveItem>().isPickable = false;
+                        equipedItem = null;//'couse I used it just now 
                         break;
                 }
                
@@ -217,7 +234,30 @@ public class PickItems : MonoBehaviour {
             
         }
     }
+    
+    #region Helper Methods
 
+    private void SetEquipedItemToPosition(Transform newParent)
+    {
+        if(equipedItem != null)
+        {
+            equipedItem.transform.parent = newParent;
+            equipedItem.transform.localPosition = new Vector3(0, 0, 0);
+        }
+    }
+
+    //Start listening to item
+    public void SubscribeToNewItemBroadcast(GameObject item)
+    {
+        item.GetComponent<BroadcastItselfToPlayer>().OnUpdateNotifyAboutItselfEvent += PickItems_OnUpdateNotifyAboutItselfEvent;
+    }
+
+    //Stop listening to item
+    public void UnSubscribeToNewItemBroadcast(GameObject item)
+    {
+        item.GetComponent<BroadcastItselfToPlayer>().OnUpdateNotifyAboutItselfEvent -= PickItems_OnUpdateNotifyAboutItselfEvent;
+    }
+    
     //Found new closest place
     private void SetNewClosestPlaceAndHighlightStatus(GameObject item)
     {
@@ -245,5 +285,6 @@ public class PickItems : MonoBehaviour {
     {
         return (Mathf.Abs(item.transform.position.x - gameObject.transform.position.x) < pickRange)?true:false;
     }
-
+#endregion
+    
 }

@@ -10,7 +10,9 @@ public class PsycheStatus : MonoBehaviour {
 
     private bool lerp;
 
-    private float psyche = 1000;
+    private float psyche;
+
+    private float psycheMax;
 
     [SerializeField]
     [Range(0,5)]
@@ -20,6 +22,8 @@ public class PsycheStatus : MonoBehaviour {
     void Start () {
 
         GameObject.FindGameObjectWithTag("GameLogic").GetComponent<Psyche>().OnPsycheChangedEvent += PsycheStatus_OnPsycheChangedEvent;
+        psyche = GameObject.FindGameObjectWithTag("GameLogic").GetComponent<Psyche>().psycheCurr;
+        psycheMax = psyche;
         GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent += PsycheStatus_OnUpdateEvent;
     }
 
@@ -29,9 +33,9 @@ public class PsycheStatus : MonoBehaviour {
         if ((!isPrimaryStatusBar)&&lerp)
         {
             //if it reached new value, stop
-            if (GetComponent<Image>().fillAmount - psycheLossSpeed * Time.deltaTime < psyche/1000)
+            if (GetComponent<Image>().fillAmount - psycheLossSpeed * Time.deltaTime < psyche/ psycheMax)
             {
-                GetComponent<Image>().fillAmount = psyche/1000;
+                GetComponent<Image>().fillAmount = psyche/psycheMax;
                 lerp = false;//stop
             }
             else
@@ -50,7 +54,7 @@ public class PsycheStatus : MonoBehaviour {
     private void PsycheStatus_OnPsycheChangedEvent(float currentPsyche)
     {
         psyche = currentPsyche;
-        if (isPrimaryStatusBar) { GetComponent<Image>().fillAmount = currentPsyche / 1000; }
+        if (isPrimaryStatusBar) { GetComponent<Image>().fillAmount = currentPsyche / psycheMax; }
         Invoke("StartLerp", 0.5f);//little delay so that player can notice change
     }
     

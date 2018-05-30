@@ -13,6 +13,8 @@ public class InteractiveItem : MonoBehaviour {
     public Names name;
     public Types type;
 
+    private GameObject owner;
+
     private bool highlight { get; set; }
 
 	// Use this for initialization
@@ -20,8 +22,25 @@ public class InteractiveItem : MonoBehaviour {
         highlight = false;
         isPickable = true;
         isUsable = true;
-}
-	
+    }
+
+    public void SetOwner(GameObject newOwner)
+    {
+        //old one
+        if(owner != null && owner.GetComponent<InteractiveItem>() && owner.GetComponent<InteractiveItem>().name == Names.Window)
+        {
+            owner.GetComponent<Window>().ChangeStateTo(Window.State.Closed);
+        }
+
+        //old one
+        if (owner != null && owner.GetComponent<InteractiveItem>() && owner.GetComponent<InteractiveItem>().name == Names.Child)
+        {
+            owner.GetComponent<Child>().isHavingToy = false;
+        }
+
+        owner = newOwner;//switch
+    }
+
     public void HighlightSelf()
     {
         highlight = true;

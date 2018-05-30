@@ -30,10 +30,8 @@ public class BroadcastItselfToNoonWitch : MonoBehaviour {
     {
         if (GameObject.FindGameObjectWithTag("GameLogic") && GameObject.FindGameObjectWithTag("NoonWitch"))
         {
-            //subscribe to Update
+            //unsubscribe to Update
             GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent -= BroadcastItself_OnUpdateEvent;
-            //tell player to subscibe to this object
-            GameObject.FindGameObjectWithTag("NoonWitch").GetComponent<PickItems>().UnSubscribeToNewItem(this.gameObject);
 
         }
     }

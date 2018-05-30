@@ -13,7 +13,7 @@ public class BroadcastItselfToPlayer : MonoBehaviour {
         //subscribe to Update
         GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent += BroadcastItself_OnUpdateEvent;
         //tell player to subscibe to this object
-        GameObject.FindGameObjectWithTag("Player").GetComponent<PickItems>().SubscribeToNewItem(this.gameObject);
+        GameObject.FindGameObjectWithTag("Player").GetComponent<PickItems>().SubscribeToNewItemBroadcast(this.gameObject);
     }
 
     private void BroadcastItself_OnUpdateEvent()
@@ -32,7 +32,7 @@ public class BroadcastItselfToPlayer : MonoBehaviour {
             //subscribe to Update
             GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent -= BroadcastItself_OnUpdateEvent;
             //tell player to subscibe to this object
-            GameObject.FindGameObjectWithTag("Player").GetComponent<PickItems>().UnSubscribeToNewItem(this.gameObject);
+            GameObject.FindGameObjectWithTag("Player").GetComponent<PickItems>().UnSubscribeToNewItemBroadcast(this.gameObject);
 
         }
     }

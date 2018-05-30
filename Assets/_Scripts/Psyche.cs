@@ -12,10 +12,13 @@ public class Psyche : MonoBehaviour {
     private GameObject psycheStatus;
     
     [SerializeField]
-    private float psycheCurr = 1000;
-
-    [SerializeField]
+    public float psycheCurr = 100;
+    
     private float fireplace = 0;
+    
+    private float noonWitch = 0;
+    
+    private float child = 0;
 
     [SerializeField]
     private float psycheLossSpeed = 1;
@@ -28,12 +31,13 @@ public class Psyche : MonoBehaviour {
 
     private void SubtractPsyche()
     {
-        if(psycheCurr != psycheCurr - fireplace)
+        float psycheLoss = (fireplace + noonWitch + child) * psycheLossSpeed;
+        if(psycheCurr != psycheCurr - psycheLoss)
         {
-            if((psycheCurr - fireplace) < 0) { psycheCurr = 0; }
+            if((psycheCurr - psycheLoss) < 0) { psycheCurr = 0; }
             else
             {
-                psycheCurr -= fireplace;
+                psycheCurr -= psycheLoss;
             }
             //event for status bars
             OnPsycheChangedEvent(psycheCurr);
@@ -41,21 +45,65 @@ public class Psyche : MonoBehaviour {
         
     }
 
-    //Start listening to item
-    public void SubscribeToNewItem(GameObject item)
+    //Start listening to item ... (if I wanted to make more then one fireplace at runtime, I need this method)
+    public void SubscribeToFireplace(GameObject fireplace)
     {
-        item.GetComponent<Fireplace>().OnReachingFuelTierEvent += Psyche_OnReachingFuelTierEvent;
+        fireplace.GetComponent<Fireplace>().OnReachingFuelTierEvent += Psyche_OnReachingFuelTierEvent;
+    }
+
+    //Start listening to item
+    public void SubscribeToNoonWitch(GameObject noonWitch)
+    {
+        noonWitch.GetComponent<WindowColision>().OnNoonWitchSpookEvent += Psyche_OnNoonWitchSpookEvent;
+    }
+
+    //Start listening to item
+    public void SubscribeToChild(GameObject child)
+    {
+        child.GetComponent<Child>().OnStartScreamingEvent += Psyche_OnStartScreamingEvent; ;
+    }
+
+    private void Psyche_OnStartScreamingEvent(GameObject sender)
+    {
+        if (sender.GetComponent<Child>().isHavingToy)
+        {
+            child = 0;
+        }
+        else
+        {
+            child = 10;
+        }
+    }
+
+    private void Psyche_OnNoonWitchSpookEvent(bool isSpooking)
+    {
+        if (isSpooking)
+        {
+            noonWitch = 5;
+        }
+        else
+        {
+            noonWitch = 0;
+        }
     }
 
     private void Psyche_OnReachingFuelTierEvent(float tier)
     {
-        if(tier != 0)
+        if(tier < 50)
         {
-            fireplace = tier;
+            if(tier == 10)
+            {
+                fireplace = 2;
+            }
+            if (tier == 0)
+            {
+                fireplace = 5;
+            }
         }
         else
         {
             fireplace = 0;
         }
+       
     }
 }

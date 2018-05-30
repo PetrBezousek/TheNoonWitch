@@ -31,7 +31,7 @@ public class Fireplace : MonoBehaviour {
         fuelCurr = fuelMax;
         //subscribe to Update
         GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent += Fireplace_OnUpdateEvent;
-        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<Psyche>().SubscribeToNewItem(gameObject);
+        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<Psyche>().SubscribeToFireplace(gameObject);
     }
 
     //Update
@@ -43,26 +43,28 @@ public class Fireplace : MonoBehaviour {
             fuelCurr -= burnSpeed * Time.deltaTime;
         }
         else { fuelCurr = 0; }
+        //0%
+        if(fuelCurr <= 0)
+        {
+            OnReachingFuelTierEvent(0);
+            fuelCurr = 0;
+        }
         //if fire is at 10%
         if (fuelCurr <= 10)
         {
-            OnReachingFuelTierEvent(25);
+            OnReachingFuelTierEvent(10);
         }
+        //50%
         if (fuelCurr > 10 && fuelCurr <= 50)
         {
-            OnReachingFuelTierEvent(0);
+            OnReachingFuelTierEvent(50);
            //...show notification
         }
         if (fuelCurr > 50 && fuelCurr < 100)
         {
-            OnReachingFuelTierEvent(0);
+            OnReachingFuelTierEvent(100);
         }
         
-        if(fuelCurr < 0)
-        {
-            OnReachingFuelTierEvent(50);
-            fuelCurr = 0;
-        }
 
         fuelStatus.GetComponent<Text>().text = Mathf.Floor((fuelCurr / fuelMax)*100) + "%";
     }
