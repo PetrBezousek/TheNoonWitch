@@ -107,14 +107,23 @@ public class PickItems : MonoBehaviour {
     }
     
     //Pick nearest item and put on its position currently equiped item
+    //TODO Refactor it a bit
     private void PickUpItem()
     {
         if(theClosestPickable != null)
         {
             theClosestPickable.GetComponent<InteractiveItem>().SetOwner(gameObject);
+                
+            //is it toy?
+            if (theClosestPickable.GetComponent<Rigidbody2D>())
+            {
+                theClosestPickable.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
+            }
 
             if (equipedItem != null)
             {
+                
+
                 //přiřadím stav (kvůli tomu, aby se neposílali broadcasty)
                 theClosestPickable.GetComponent<InteractiveItem>().isPickable = false;
                 theClosestPickable.GetComponent<InteractiveItem>().UnHighlightSelf();
@@ -177,9 +186,9 @@ public class PickItems : MonoBehaviour {
         // child 
         if ((place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Child)
         && (equipedItem != null) 
-        && (!place.GetComponent<Child>().isHavingToy)
         && ((equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Husar)
-        || equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Kohout))
+        || equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Kohout
+        || equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Kocarek))
         {
             return true;
         }
@@ -219,8 +228,10 @@ public class PickItems : MonoBehaviour {
                         }
 
                         theClosestPlace.GetComponent<Child>().isHavingToy = true;
-                        theClosestPlace.GetComponent<Child>().Scream();
-
+                        theClosestPlace.GetComponent<Child>().numberOfToysHaving++;
+                        theClosestPlace.GetComponent<Child>().CheckScream();
+               
+                        
                         //position
                         equipedItem.transform.parent = theClosestPlace.transform;
                         equipedItem.transform.localPosition = new Vector3(0, 0, 0);

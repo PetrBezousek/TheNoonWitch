@@ -7,7 +7,7 @@ public class InteractiveItem : MonoBehaviour {
     public bool isPickable { get; set; }
     public bool isUsable { get; set; }
 
-    public enum Names {Husar, Kohout, Wood,Fireplace,Window,Child, Latch}
+    public enum Names {Husar, Kohout, Wood,Fireplace,Window,Child, Latch, Kocarek}
     public enum Types {Pickable, Place}
     
     public Names name;

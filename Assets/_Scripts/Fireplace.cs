@@ -72,7 +72,7 @@ public class Fireplace : MonoBehaviour {
     public void AddWood()
     {
         GameObject newWood = Instantiate(wood, spawnPoint.transform);
-        newWood.transform.position = new Vector3(newWood.transform.position.x + Random.Range(-3, 3), newWood.transform.position.y + Random.Range(-2, 2), newWood.transform.position.y);
+        newWood.transform.position = new Vector3(newWood.transform.position.x + Random.Range(-3, 3), newWood.transform.position.y + Random.Range(-2, 2), 0);
         fuelCurr += 100;
         if (fuelCurr > 100) { fuelCurr = 100; }
     }

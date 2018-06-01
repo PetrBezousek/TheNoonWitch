@@ -60,19 +60,12 @@ public class Psyche : MonoBehaviour {
     //Start listening to item
     public void SubscribeToChild(GameObject child)
     {
-        child.GetComponent<Child>().OnStartScreamingEvent += Psyche_OnStartScreamingEvent; ;
+        child.GetComponent<Child>().OnUpdateScreamingEvent += Psyche_OnUpdateScreamingEvent;
     }
 
-    private void Psyche_OnStartScreamingEvent(GameObject sender)
+    private void Psyche_OnUpdateScreamingEvent(int screamStreak)
     {
-        if (sender.GetComponent<Child>().isHavingToy)
-        {
-            child = 0;
-        }
-        else
-        {
-            child = 10;
-        }
+        child = screamStreak * 2;
     }
 
     private void Psyche_OnNoonWitchSpookEvent(bool isSpooking)
