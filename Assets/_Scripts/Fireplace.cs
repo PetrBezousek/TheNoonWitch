@@ -13,7 +13,9 @@ public class Fireplace : MonoBehaviour {
     private GameObject spawnPoint;
 
     [SerializeField]
-    private GameObject wood;
+    private GameObject woodSmall;
+    [SerializeField]
+    private GameObject woodBig;
 
     [SerializeField]
     private GameObject fuelStatus;
@@ -69,12 +71,24 @@ public class Fireplace : MonoBehaviour {
         fuelStatus.GetComponent<Text>().text = Mathf.Floor((fuelCurr / fuelMax)*100) + "%";
     }
 
-    public void AddWood()
+    public void AddWood(InteractiveItem.Names name)
     {
-        GameObject newWood = Instantiate(wood, spawnPoint.transform);
-        newWood.transform.position = new Vector3(newWood.transform.position.x + Random.Range(-3, 3), newWood.transform.position.y + Random.Range(-2, 2), 0);
-        fuelCurr += 100;
-        if (fuelCurr > 100) { fuelCurr = 100; }
+        if(name == InteractiveItem.Names.WoodSmall)
+        {
+            GameObject newWood = Instantiate(woodSmall, spawnPoint.transform);
+            newWood.transform.position = new Vector3(newWood.transform.position.x + 7, newWood.transform.position.y , 0);
+            fuelCurr += 20;
+            if (fuelCurr > 100) { fuelCurr = 100; }
+
+        }
+        if (name == InteractiveItem.Names.WoodBig)
+        {
+            GameObject newWood = Instantiate(woodBig, spawnPoint.transform);
+            newWood.transform.position = new Vector3(newWood.transform.position.x - 5, newWood.transform.position.y, 0);
+            fuelCurr += 50;
+            if (fuelCurr > 100) { fuelCurr = 100; }
+
+        }
     }
 
     private void OnDestroy()

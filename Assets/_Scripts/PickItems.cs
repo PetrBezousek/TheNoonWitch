@@ -20,12 +20,6 @@ public class PickItems : MonoBehaviour {
 
     public GameObject equipedItem;
 
-    // Use this for initialization
-    void Start () {
-        //subscribe to Update
-        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent += PickItems_OnUpdateEvent;
-    }
-
     //Update
     private void PickItems_OnUpdateEvent()
     {
@@ -159,6 +153,8 @@ public class PickItems : MonoBehaviour {
                 //fyzika
                 SetEquipedItemToPosition(playersHand.transform);
             }
+
+            UpdatePlayersSpeed();
         }
     }
 
@@ -167,7 +163,8 @@ public class PickItems : MonoBehaviour {
         if(equipedItem != null)
         {
             //add wood to the fire
-            if(equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Wood && place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Fireplace)
+            if((equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.WoodSmall || equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.WoodBig)
+                && place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Fireplace)
             {
                 return true;
             } 
@@ -207,8 +204,9 @@ public class PickItems : MonoBehaviour {
                 switch (theClosestPlace.GetComponent<InteractiveItem>().name)
                 {
                     case InteractiveItem.Names.Fireplace:
-                        theClosestPlace.GetComponent<Fireplace>().AddWood();
+                        theClosestPlace.GetComponent<Fireplace>().AddWood(equipedItem.GetComponent<InteractiveItem>().name);
                         Destroy(equipedItem);
+                        equipedItem = null;
                         break;
                     case InteractiveItem.Names.Window:
 
@@ -240,13 +238,40 @@ public class PickItems : MonoBehaviour {
                         equipedItem = null;//'couse I used it just now 
                         break;
                 }
+                UpdatePlayersSpeed();
                
             }
             
         }
     }
-    
+
+    private void OnEnable()
+    {
+        //subscribe to Update
+        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent += PickItems_OnUpdateEvent;
+
+    }
+
+    private void OnDisable()
+    {
+        //UNsubscribe from Update
+        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent -= PickItems_OnUpdateEvent;
+        
+    }
+
     #region Helper Methods
+
+    private void UpdatePlayersSpeed()
+    {
+        if(equipedItem != null)
+        {
+            GetComponent<MovementByUserInputHorizontal>().DebuffSpeed(equipedItem.GetComponent<InteractiveItem>().weight);
+        }
+        else
+        {
+            GetComponent<MovementByUserInputHorizontal>().DebuffSpeed(1);//reset - no debuff
+        }
+    }
 
     private void SetEquipedItemToPosition(Transform newParent)
     {

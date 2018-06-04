@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class MovementBySimulatedInputHorizontal : MonoBehaviour {
 
+    [SerializeField]
+    int boundaryLeft= -30;
+    [SerializeField]
+    int boundaryRight = 30;
+
     //serialize just for testing purpose
     [SerializeField]
     private float speed = 30f;
@@ -51,11 +56,11 @@ public class MovementBySimulatedInputHorizontal : MonoBehaviour {
         {
             //move object left/right
             transform.position = transform.position + (new Vector3(moveValue * speed, 0, 0) * Time.deltaTime);
-            if(transform.position.x < -25)
+            if(transform.position.x < boundaryLeft)
             {
                 moveState = Move.Right;
             }
-            if (transform.position.x > 25)
+            if (transform.position.x > boundaryRight)
             {
                 moveState = Move.Left;
             }

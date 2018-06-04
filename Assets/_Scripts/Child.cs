@@ -9,11 +9,14 @@ public class Child : MonoBehaviour {
 
     public bool isHavingToy = false;
 
+    [SerializeField]
     int numberOfSkips = 2;
     int currentSkipsLeft;
 
     [SerializeField]
     float grabRange = 1;
+    [SerializeField]
+    float grabChance = 25;
 
     [SerializeField]
     public GameObject[] toys;
@@ -26,9 +29,12 @@ public class Child : MonoBehaviour {
 
     int screamStreak = 0;
 
+    bool isInGrabingMood =false;
+    bool isInRange = false;
 
-	// Use this for initialization
-	void Start () {
+
+    // Use this for initialization
+    void Start () {
         currentSkipsLeft = numberOfSkips;
 
         GameObject.FindGameObjectWithTag("GameLogic").GetComponent<Psyche>().SubscribeToChild(gameObject);
@@ -38,11 +44,13 @@ public class Child : MonoBehaviour {
     private void ScreamGraduates()
     {
         screamStreak++;
-
+        if(screamStreak > -2)//možná udělat strop streaku, např. 4 s tím že od 3 už bude i chytat
+        {
+            isInGrabingMood = true;
+        }
         CheckScream();
     }
-
-    //tohle se mi nelíbí!
+    
     public void CheckScream()
     {
 
@@ -51,6 +59,7 @@ public class Child : MonoBehaviour {
             if(currentSkipsLeft > 0)
             {
                 screamStreak = 0;
+                isInGrabingMood = false;
 
                 currentSkipsLeft--;
             }
@@ -79,12 +88,32 @@ public class Child : MonoBehaviour {
         }
 
     }
-
+ 
+    //Player broadcasts itself to child
     private void Child_OnUpdateNotifyAboutItselfEvent(GameObject player)
     {
-        if(Mathf.Abs(player.transform.position.x-transform.position.x) < grabRange)
+        if(isInGrabingMood 
+            && !isInRange
+            && Mathf.Abs(player.transform.position.x-transform.position.x) < grabRange)
         {
-            Debug.Log("Am grabing you bich!");
+            isInRange = true;//so child cant grab player infinitely
+            float rng = Random.value;
+            Debug.Log(rng + "  chance: " + grabChance/100);
+            if(rng < grabChance / 100)
+                {
+                player.GetComponent<MovementByUserInputHorizontal>().enabled = false;//cant move now
+                player.GetComponent<PickItems>().enabled = false;//cant pick items
+
+                player.GetComponent<RootMinigame>().enabled = true;//start minigame
+
+            }
+            
+        }
+
+        //if out of range
+        if(Mathf.Abs(player.transform.position.x - transform.position.x) > grabRange)
+        {
+            isInRange = false;//child can grab player now again
         }
     }
 
