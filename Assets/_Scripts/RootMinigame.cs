@@ -1,8 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class RootMinigame : MonoBehaviour {
+
+    [SerializeField]
+    Text UI;
 
     [SerializeField]
     int difficulty = 6;
@@ -24,23 +28,23 @@ public class RootMinigame : MonoBehaviour {
         {
             if(Random.Range(0,2) == 0)
             {
-                task.Add('x');
+                task.Add('↑');
             }
             else
             {
-                task.Add('c');
+                task.Add('↓');
             }
         }
 
 
-        //just a debug stuff
+        //just a UI stuff
         //....
         string s = "";
         foreach (char character in task)
         {
             s += character;
         }
-        Debug.Log(s);
+        UI.text = s;
         //....
     }
 
@@ -49,57 +53,63 @@ public class RootMinigame : MonoBehaviour {
     {
         if (!isTaskFailed)
         {
-            if (Input.GetKeyDown(KeyCode.X))
+            if (Input.GetKeyDown(KeyCode.UpArrow))
             {
-                if(task[0] == 'x')
+                if(task[0] == '↑')
                 {
                     task.RemoveAt(0);
 
-                    //just a debug stuff
+                    //just a UI stuff
                     //....
                     string s = "";
                     foreach(char character in task){
                         s += character;
                     }
-                    Debug.Log(s);
+                    UI.text = s;
                     //....
-                
+
                     if (task.Count == 0) { Unroot(); }
                 }
                 else
                 {
                     isTaskFailed = true;
-                    Debug.Log("FAILED!");
+                    UI.text = "FAILED!";
                     Invoke("Unroot", secToUnrootIfFailed);
                 }
             }
 
-            if (Input.GetKeyDown(KeyCode.C))
+            if (Input.GetKeyDown(KeyCode.DownArrow))
             {
-                if (task[0] == 'c')
+                if (task[0] == '↓')
                 {
                     task.RemoveAt(0);
 
-                    //just a debug stuff
+                    //just a UI stuff
                     //....
                     string s = "";
                     foreach (char character in task)
                     {
                         s += character;
                     }
-                    Debug.Log(s);
+                    UI.text = s;
                     //....
                     if (task.Count == 0) { Unroot(); }
                 }
                 else
                 {
                     isTaskFailed = true;
-                    Debug.Log("FAILED!");
+                    UI.text = "FAILED!";
                     Invoke("Unroot", secToUnrootIfFailed);
                 }
             }
         }
         
+    }
+
+    public void MinigameStartsSoon()
+    {
+        //anim/sounds
+        UI.text = "Root!";
     }
 
     private void Unroot()
@@ -108,7 +118,7 @@ public class RootMinigame : MonoBehaviour {
         GetComponent<MovementByUserInputHorizontal>().enabled = true;
         GetComponent<PickItems>().enabled = true;
         isTaskFailed = false;
-        Debug.Log("Released!");
+        UI.text = "Released!";
     }
 
     private void OnDisable()

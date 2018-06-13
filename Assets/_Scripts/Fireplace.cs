@@ -76,7 +76,7 @@ public class Fireplace : MonoBehaviour {
         if(name == InteractiveItem.Names.WoodSmall)
         {
             GameObject newWood = Instantiate(woodSmall, spawnPoint.transform);
-            newWood.transform.position = new Vector3(newWood.transform.position.x + 7, newWood.transform.position.y , 0);
+            newWood.transform.position = new Vector3(newWood.transform.position.x + 1, newWood.transform.position.y , 0);
             fuelCurr += 20;
             if (fuelCurr > 100) { fuelCurr = 100; }
 
@@ -84,7 +84,7 @@ public class Fireplace : MonoBehaviour {
         if (name == InteractiveItem.Names.WoodBig)
         {
             GameObject newWood = Instantiate(woodBig, spawnPoint.transform);
-            newWood.transform.position = new Vector3(newWood.transform.position.x - 5, newWood.transform.position.y, 0);
+            newWood.transform.position = new Vector3(newWood.transform.position.x - 1, newWood.transform.position.y, 0);
             fuelCurr += 50;
             if (fuelCurr > 100) { fuelCurr = 100; }
 

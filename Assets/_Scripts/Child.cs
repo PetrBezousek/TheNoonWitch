@@ -31,6 +31,7 @@ public class Child : MonoBehaviour {
 
     bool isInGrabingMood =false;
     bool isInRange = false;
+    RootMinigame minigame;
 
 
     // Use this for initialization
@@ -98,13 +99,16 @@ public class Child : MonoBehaviour {
         {
             isInRange = true;//so child cant grab player infinitely
             float rng = Random.value;
-            Debug.Log(rng + "  chance: " + grabChance/100);
+          //  Debug.Log(rng + "  chance: " + grabChance/100);
             if(rng < grabChance / 100)
                 {
                 player.GetComponent<MovementByUserInputHorizontal>().enabled = false;//cant move now
                 player.GetComponent<PickItems>().enabled = false;//cant pick items
+                minigame = player.GetComponent<RootMinigame>();//save reference for invoke
 
-                player.GetComponent<RootMinigame>().enabled = true;//start minigame
+                minigame.MinigameStartsSoon();
+
+                Invoke("StartMinigame", 0.75f);
 
             }
             
@@ -115,6 +119,11 @@ public class Child : MonoBehaviour {
         {
             isInRange = false;//child can grab player now again
         }
+    }
+
+    private void StartMinigame()
+    {
+        minigame.enabled = true;//start minigame
     }
 
     public void SubscribeToPlayersBroadcast(GameObject player)
