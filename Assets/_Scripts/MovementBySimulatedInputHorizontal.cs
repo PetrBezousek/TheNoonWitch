@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class MovementBySimulatedInputHorizontal : MonoBehaviour {
-
+    
+    [Header("A and B position of her patrol (in pixels, game window is 18 pixels long)")]
     [SerializeField]
     int boundaryLeft= -30;
     [SerializeField]
     int boundaryRight = 30;
 
     //serialize just for testing purpose
+    [Header("Speed in pixels per second")]
     [SerializeField]
     private float speed = 30f;
     float moveValue = 0;
@@ -22,11 +24,15 @@ public class MovementBySimulatedInputHorizontal : MonoBehaviour {
     void Start()
     {
         moveState = Move.Left;
-        //subscribe to fixedUpdate
-        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnFixedUpdateEvent += UpdateManager_OnFixedUpdateEvent;
     }
 
-    //Fixed update
+    private void OnEnable()
+    {
+        //subscribe to Update
+        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent += UpdateManager_OnFixedUpdateEvent;
+    }
+
+    //update
     private void UpdateManager_OnFixedUpdateEvent()
     {
         
@@ -55,7 +61,7 @@ public class MovementBySimulatedInputHorizontal : MonoBehaviour {
         if (moveValue != 0)
         {
             //move object left/right
-            transform.position = transform.position + (new Vector3(moveValue * speed, 0, 0) * Time.deltaTime);
+            transform.position = transform.position + (new Vector3(moveValue * speed, 0, 0) * UnityEngine.Time.deltaTime);
             if(transform.position.x < boundaryLeft)
             {
                 moveState = Move.Right;
@@ -70,5 +76,10 @@ public class MovementBySimulatedInputHorizontal : MonoBehaviour {
     public void ResumeMoving()
     {
         moveState = lastDirection;
+    }
+
+    private void OnDisable()
+    {
+        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent -= UpdateManager_OnFixedUpdateEvent;
     }
 }

@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class Window : MonoBehaviour {
 
-    public delegate void OnStateChange(GameObject sender);
-    public event OnStateChange OnStateChangedEvent;
+    [SerializeField]
+    public GameObject FrameClosed;
+
+    [SerializeField]
+    GameObject FrameOpened;
 
     public enum State { Closed, Opened, Latched }
 
@@ -13,7 +16,7 @@ public class Window : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        ChangeStateTo(windowState);//just for testing
+        ChangeStateTo(windowState);//just for testing (so that i can have scene with open windows but on start it sets to parameters value)
 
         //subscribe
         GameObject.FindGameObjectWithTag("Player").GetComponent<PickItems>().OnWindowUsedEvent += Window_OnItemUsedEvent;
@@ -26,6 +29,7 @@ public class Window : MonoBehaviour {
             //Latch the window
             if ((player.GetComponent<PickItems>().equipedItem != null) && (player.GetComponent<PickItems>().equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch))
             {
+
                 GetComponent<Window>().ChangeStateTo(Window.State.Latched);
                 
                 //position
@@ -33,6 +37,10 @@ public class Window : MonoBehaviour {
                 player.GetComponent<PickItems>().equipedItem.transform.localPosition = new Vector3(0, 0, 0);
 
                 player.GetComponent<PickItems>().equipedItem.GetComponent<InteractiveItem>().isPickable = true;
+
+                player.GetComponent<PickItems>().equipedItem.GetComponent<SpriteRenderer>().sortingLayerName = "Background";
+                player.GetComponent<PickItems>().equipedItem.GetComponent<SpriteRenderer>().sortingOrder = 100;
+
                 player.GetComponent<PickItems>().equipedItem = null;//'couse I used it just now 
                 
             }//or just shut the window
@@ -51,15 +59,18 @@ public class Window : MonoBehaviour {
         {
             case State.Opened:
                 windowState = State.Opened;
-                GetComponent<Renderer>().material.color = new Color(0.8f, 0.2f, 0.2f, 1f);
+                FrameClosed.SetActive(false);
+                FrameOpened.SetActive(true);
                 break;
             case State.Closed:
                 windowState = State.Closed;
-                GetComponent<Renderer>().material.color = new Color(0.2f, 0.2f, 0.8f, 1f);
+                FrameOpened.SetActive(false);
+                FrameClosed.SetActive(true);
                 break;
             case State.Latched:
                 windowState = State.Latched;
-                GetComponent<Renderer>().material.color = new Color(0.2f, 0.8f, 0.2f, 1f);
+                FrameOpened.SetActive(false);
+                FrameClosed.SetActive(true);
                 break;
         }
     }

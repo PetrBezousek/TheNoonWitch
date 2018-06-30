@@ -7,9 +7,17 @@ public class PickItems : MonoBehaviour {
     public delegate void OnItemUsed(GameObject sender);
     public event OnItemUsed OnWindowUsedEvent;
 
+    public delegate void OnChildGotAllToys();
+    public event OnChildGotAllToys OnChildGotAllToysEvent;
+
+    public delegate void OnLatchWindow();
+    public event OnLatchWindow OnLatchWindowEvent;
+
     [SerializeField]
     UIManager UI;
 
+    [Space]
+    [Header("Grab item range in pixels (Game is 18 pixels long)")]
     [SerializeField]
     [Range(0,30)]
     private int pickRange = 5;
@@ -17,23 +25,37 @@ public class PickItems : MonoBehaviour {
     [SerializeField]
     private GameObject playersHand;
 
+    [SerializeField]
+    private WindowColision noonWitch;
+
     public GameObject theClosestPlace;
 
     public GameObject theClosestPickable;
 
     public GameObject equipedItem;
 
+    [SerializeField]
+    private GamePhases gamePhases;
+
     //Update
     private void PickItems_OnUpdateEvent()
     {
         if (theClosestPickable != null)
         {
-            if (!IsInRangeWith(theClosestPickable)) {
-                
-                UI.ArrowUp.GetComponent<FixedPosition>().Hide();
+            if (!IsInRangeWith(theClosestPickable) || theClosestPlace != null) {
 
-                theClosestPickable.GetComponent<InteractiveItem>().UnHighlightSelf();
-                theClosestPickable = null;
+                if (theClosestPlace != null)
+                {
+                    UI.ArrowDown.GetComponent<FixedPosition>().SetParent(theClosestPlace.transform);
+                    UI.ArrowDown.GetComponent<FixedPosition>().Show();
+                }
+                else
+                {
+                    UI.ArrowDown.GetComponent<FixedPosition>().Hide();
+
+                    theClosestPickable.GetComponent<InteractiveItem>().UnHighlightSelf();
+                    theClosestPickable = null;
+                }
             }
         }
         if (theClosestPlace != null)
@@ -48,13 +70,11 @@ public class PickItems : MonoBehaviour {
         }
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
+            //both have nullcheck
             UsePlace();
-        }
-
-        if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
             PickUpItem();
         }
+        
     }
 
     //Semi-Update (it happens every update) Info broadcasted from item
@@ -74,7 +94,11 @@ public class PickItems : MonoBehaviour {
                             //is item closer?
                             if (Mathf.Abs(sender.transform.position.x - gameObject.transform.position.x) < Mathf.Abs(theClosestPickable.transform.position.x - gameObject.transform.position.x))
                             {
-                                SetNewClosestItemAndHighlightStatus(sender);
+                                if(sender.GetComponent<InteractiveItem>().name != InteractiveItem.Names.Latch)
+                                {
+                                    SetNewClosestItemAndHighlightStatus(sender);
+                                }
+                                
 
                             }
                         }
@@ -98,9 +122,7 @@ public class PickItems : MonoBehaviour {
                                 }
                             }
                             else { SetNewClosestPlaceAndHighlightStatus(sender); }
-                        }
-                        
-                         
+                        }   
                 }
                 break;
         }
@@ -115,7 +137,7 @@ public class PickItems : MonoBehaviour {
         {
             theClosestPickable.GetComponent<InteractiveItem>().SetOwner(gameObject);
 
-            UI.ArrowUp.GetComponent<FixedPosition>().Hide();
+            UI.ArrowDown.GetComponent<FixedPosition>().Hide();
 
             //is it toy?
             if (theClosestPickable.GetComponent<Rigidbody2D>())
@@ -126,11 +148,13 @@ public class PickItems : MonoBehaviour {
             if (equipedItem != null)
             {
                 
-
                 //přiřadím stav (kvůli tomu, aby se neposílali broadcasty)
                 theClosestPickable.GetComponent<InteractiveItem>().isPickable = false;
                 theClosestPickable.GetComponent<InteractiveItem>().UnHighlightSelf();
                 equipedItem.GetComponent<InteractiveItem>().isPickable = true;
+
+                equipedItem.GetComponent<SpriteRenderer>().sortingLayerName = "Items";
+                equipedItem.GetComponent<SpriteRenderer>().sortingOrder = Random.Range(101, 10001);
 
                 //prhodím pozice logicky
                 GameObject temp = equipedItem;
@@ -139,14 +163,23 @@ public class PickItems : MonoBehaviour {
 
                 //prohodím pozice fyzicky      
                 theClosestPickable.transform.parent = null;
-                theClosestPickable.transform.position = equipedItem.transform.position;
+
+                if(equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch)
+                {
+                    theClosestPickable.transform.position = new Vector3(
+                        equipedItem.transform.position.x-0.6f,
+                        -2.75f,//constanta -> průměrná souřadnice podlahy
+                        equipedItem.transform.position.z);
+                }
+                else
+                {
+                    theClosestPickable.transform.position = equipedItem.transform.position;
+                }
+
                 SetEquipedItemToPosition(playersHand.transform);
+                
                 // equipedItem.transform.position = theClosestItem.transform.position;
-
-                // equipedItem.transform.position = theClosestItem.transform.position;
-
-
-
+                
                 theClosestPickable = null;               
             }
             else//first time pickup (empty hand)
@@ -191,13 +224,7 @@ public class PickItems : MonoBehaviour {
             {
                 return true;
             }
-
-            //put item on the table
-            if (place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Table
-                && !place.GetComponent<Table>().isItemOnTable)
-            {
-                return true;
-            }
+            
         }
         // close/lock window 
         if((place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Window)
@@ -205,7 +232,8 @@ public class PickItems : MonoBehaviour {
         ||
         (place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Window)
         && (place.GetComponent<Window>().windowState == Window.State.Closed)
-        && (equipedItem != null) && (equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch))
+        && (equipedItem != null) && (equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch)
+        && ((!noonWitch.isSpooking && gamePhases.currentPhase != GamePhases.Phase.Latch_4) ||(noonWitch.isSpooking && noonWitch.lastWindow == place)) )
         {
             return true;
         }
@@ -228,6 +256,7 @@ public class PickItems : MonoBehaviour {
     {
         if (theClosestPlace != null)
         {
+      
             if (IsFulfilingTermsOfPlace(theClosestPlace))
             {
                 switch (theClosestPlace.GetComponent<InteractiveItem>().name)
@@ -239,7 +268,12 @@ public class PickItems : MonoBehaviour {
                         break;
                     case InteractiveItem.Names.Window:
 
-                        if (equipedItem != null)
+                        if (OnLatchWindowEvent != null)
+                        {
+                            OnLatchWindowEvent();
+                        }
+
+                        if (equipedItem != null && equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch)
                         {
                             equipedItem.GetComponent<InteractiveItem>().SetOwner(theClosestPlace);
                         }
@@ -267,6 +301,15 @@ public class PickItems : MonoBehaviour {
 
                         theClosestPlace.GetComponent<Child>().isHavingToy = true;
                         theClosestPlace.GetComponent<Child>().numberOfToysHaving++;
+
+                        if (theClosestPlace.GetComponent<Child>().numberOfToysHaving == 3)
+                        {
+                            if (OnChildGotAllToysEvent != null)
+                            {
+                                OnChildGotAllToysEvent();
+                            }
+                        }
+
                         theClosestPlace.GetComponent<Child>().CheckScream();
                
                         
@@ -319,6 +362,8 @@ public class PickItems : MonoBehaviour {
         {
             equipedItem.transform.parent = newParent;
             equipedItem.transform.localPosition = new Vector3(0, 0, 0);
+            equipedItem.GetComponent<SpriteRenderer>().sortingLayerName = "Player";
+            equipedItem.GetComponent<SpriteRenderer>().sortingOrder = 1007;//Between FHand1 a 2
         }
     }
 
@@ -353,17 +398,22 @@ public class PickItems : MonoBehaviour {
     //Found new closest item
     private void SetNewClosestItemAndHighlightStatus(GameObject item)
     {
-        if (theClosestPickable != null)
+        //place has priority -> if there is usable place
+        if(theClosestPlace == null)
         {
-            theClosestPickable.GetComponent<InteractiveItem>().UnHighlightSelf();
-            UI.ArrowUp.GetComponent<FixedPosition>().Hide();
+            if (theClosestPickable != null)
+            {
+                theClosestPickable.GetComponent<InteractiveItem>().UnHighlightSelf();
+                UI.ArrowDown.GetComponent<FixedPosition>().Hide();
+            }
+            item.GetComponent<InteractiveItem>().HighlightSelf();
+        
+            UI.ArrowDown.GetComponent<FixedPosition>().SetParent(item.transform);
+            UI.ArrowDown.GetComponent<FixedPosition>().Show();
+        
+            theClosestPickable = item;
         }
-        item.GetComponent<InteractiveItem>().HighlightSelf();
         
-        UI.ArrowUp.GetComponent<FixedPosition>().SetParent(item.transform);
-        UI.ArrowUp.GetComponent<FixedPosition>().Show();
-        
-        theClosestPickable = item;
     }
 
     //Is it though?

@@ -7,21 +7,39 @@ public class Child : MonoBehaviour {
     public delegate void OnStartScreaming(int screamStreak);//0 = not screaming
     public event OnStartScreaming OnUpdateScreamingEvent;
 
+
     public bool isHavingToy = false;
 
+    [Space]
+    [Header("How often childs scream updates in seconds (with each update, scream psyche loss graduates) (it is set onStart)")]
+    [SerializeField]
+    public float screamGraduatesIn = 5;
+
+    [Space]
+    [Header("How many updates skip after getting all 3 toys (before throwing them away)")]
     [SerializeField]
     int numberOfSkips = 2;
-    int currentSkipsLeft;
 
+
+    int currentSkipsLeft = 99999;
+
+    [Space]
+    [Header("Grab item range in pixels (Game is 18 pixels long)")]
     [SerializeField]
     float grabRange = 1;
+    [Space]
+    [Header("Chance to root player if he comes by (in %)")]
     [SerializeField]
-    float grabChance = 25;
+    float grabChancePercent = 50;
+
+    float grabChance = 0;
 
     [SerializeField]
     public GameObject[] toys;
     public int numberOfToysHaving = 0;//Ale mohl by začít s jednou např.
 
+    [Space]
+    [Header("Force with which child throws toys (X horizontal, Y vertical)")]
     [SerializeField]
     int forceX;
     [SerializeField]
@@ -36,12 +54,28 @@ public class Child : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        currentSkipsLeft = numberOfSkips;
 
         GameObject.FindGameObjectWithTag("GameLogic").GetComponent<Psyche>().SubscribeToChild(gameObject);
-        InvokeRepeating("ScreamGraduates", 5f, 5f);
+        
 	}
-	
+    public void SetNumberOfSkips(int num)
+    {
+        numberOfSkips = num;
+    }
+    public void SetNumberOfSkips()
+    {
+        currentSkipsLeft = 0;
+    }
+
+    public void SetGrabChance()
+    {
+        grabChance = grabChancePercent;
+    }
+
+    public void SetGrabChance(float percentage)
+    {
+        grabChance = percentage;
+    }
     private void ScreamGraduates()
     {
         screamStreak++;
@@ -101,8 +135,9 @@ public class Child : MonoBehaviour {
             float rng = Random.value;
           //  Debug.Log(rng + "  chance: " + grabChance/100);
             if(rng < grabChance / 100)
-                {
+            {
                 player.GetComponent<MovementByUserInputHorizontal>().enabled = false;//cant move now
+                player.GetComponent<MovementBySimulatedInputHorizontal>().enabled = false;//cant move now
                 player.GetComponent<PickItems>().enabled = false;//cant pick items
                 minigame = player.GetComponent<RootMinigame>();//save reference for invoke
 

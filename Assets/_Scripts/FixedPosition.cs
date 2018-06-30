@@ -13,9 +13,7 @@ public class FixedPosition : MonoBehaviour {
     float offsetY;
 
     [SerializeField]
-    bool isHidden; 
-
-
+    bool isHidden;
 
     // Use this for initialization
     void Start () {
@@ -30,6 +28,7 @@ public class FixedPosition : MonoBehaviour {
 
     private void FixedPosition_OnUpdateEvent()
     {
+
         if(parent != null && !isHidden)
         {
             transform.position = new Vector3(parent.position.x + offsetX, parent.position.y + offsetY);
@@ -39,6 +38,7 @@ public class FixedPosition : MonoBehaviour {
     public void SetParent(Transform newParent)
     {
         parent = newParent;
+        transform.position = new Vector3(parent.position.x + offsetX, parent.position.y + offsetY);
     }
 
     public void SetParent(Transform newParent, float offsetXAxis, float offsetYAxis)
@@ -46,6 +46,23 @@ public class FixedPosition : MonoBehaviour {
         parent = newParent;
         offsetX = offsetXAxis;
         offsetY = offsetYAxis;
+    }
+
+    public void FlipX(bool willFaceRight)
+    {
+        if (willFaceRight && transform.localScale.x <0)
+        {
+            offsetX *= -1;
+            transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
+            transform.position = new Vector3(parent.position.x + offsetX, parent.position.y + offsetY);
+        }
+
+        if (!willFaceRight && transform.localScale.x > 0)
+        {
+            offsetX *= -1;
+            transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
+            transform.position = new Vector3(parent.position.x + offsetX, parent.position.y + offsetY);
+        }
     }
 
     public void Hide()

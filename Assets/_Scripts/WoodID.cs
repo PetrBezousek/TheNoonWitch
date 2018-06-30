@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Table : MonoBehaviour {
+public class WoodID : MonoBehaviour {
 
-    public bool isItemOnTable = false;
-    
-	
+    public int pickOrder = 0;
 }

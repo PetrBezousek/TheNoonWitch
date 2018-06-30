@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class InteractiveItem : MonoBehaviour {
-
-    public bool isPickable { get; set; }
+    
+    public bool isPickable = true;
     public bool isUsable { get; set; }
 
     public enum Names {Husar, Kohout, WoodSmall,WoodBig,Fireplace,Window,Child, Latch, Kocarek, Table}
@@ -12,22 +12,24 @@ public class InteractiveItem : MonoBehaviour {
     
     public Names name;
     public Types type;
+    [Space]
+    [Header("Multiplier to players maximum speed (0.75 = tree-quarter of max speed)")]
     [Range(0,1)]
     public float weight;
 
-    private GameObject owner;
+    public GameObject owner;
 
     private bool highlight { get; set; }
 
 	// Use this for initialization
 	void Start () {
         highlight = false;
-        isPickable = true;
         isUsable = true;
     }
 
     public void SetOwner(GameObject newOwner)
     {
+
         //old one
         if(owner != null && owner.GetComponent<InteractiveItem>() && owner.GetComponent<InteractiveItem>().name == Names.Window)
         {

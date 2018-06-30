@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 using UnityEngine.UI;
 
 public class Fireplace : MonoBehaviour {
@@ -9,27 +10,35 @@ public class Fireplace : MonoBehaviour {
     public delegate void OnReachingFuelTier(float tier);
     public event OnReachingFuelTier OnReachingFuelTierEvent;
 
-    [SerializeField]
-    private GameObject spawnPoint;
-
-    [SerializeField]
-    private GameObject woodSmall;
-    [SerializeField]
-    private GameObject woodBig;
+    public delegate void OnWoodAdded(bool smallWood);
+    public event OnWoodAdded OnWoodAddedEvent;
 
     [SerializeField]
     private GameObject fuelStatus;
 
+    [SerializeField]
+    private GameObject fire;
+
+    private DOTweenAnimation fireAnim;
+
     private float fuelMax = 100;
 
+    [Space]
+    [Header("Current fuel")]
     [SerializeField]
     private float fuelCurr;
 
+    private float fuelLastUpdate;
+
+    [Space]
+    [Header("Speed in fuel/second")]
     [SerializeField]
     private float burnSpeed = 5;
 
     // Use this for initialization
     void Start () {
+        fireAnim = fire.GetComponent<DOTweenAnimation>();
+
         fuelCurr = fuelMax;
         //subscribe to Update
         GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent += Fireplace_OnUpdateEvent;
@@ -39,53 +48,82 @@ public class Fireplace : MonoBehaviour {
     //Update
     private void Fireplace_OnUpdateEvent()
     {
+        float fuelLastUpdateTemp = fuelCurr;
+
         //if fire is burning
-        if(fuelCurr > 0)
+        if (fuelCurr > 0)
         {
             fuelCurr -= burnSpeed * Time.deltaTime;
         }
         else { fuelCurr = 0; }
         //0%
-        if(fuelCurr <= 0)
+        if((fuelCurr <= 0) && !(fuelLastUpdate <= 0))
         {
+            fireAnim.DOPause();
+
+            fire.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0, 1);
+
             OnReachingFuelTierEvent(0);
             fuelCurr = 0;
         }
         //if fire is at 10%
-        if (fuelCurr <= 10)
+        if ((fuelCurr <= 10)&&!(fuelLastUpdate <= 10))
         {
+            fire.GetComponent<SpriteRenderer>().color = new Color(0.33f, 0.275f, 0,1);
+
+            fireAnim.DOPause();
+            fireAnim.DORestartById("10");
+            fireAnim.DOPlayById("10");
+
             OnReachingFuelTierEvent(10);
         }
         //50%
-        if (fuelCurr > 10 && fuelCurr <= 50)
+        if ((fuelCurr > 10 && fuelCurr <= 50) && !(fuelLastUpdate > 10 && fuelLastUpdate <= 50))
         {
+            fire.GetComponent<SpriteRenderer>().color = new Color(0.831f, 0.761f, 0.416f, 1);
+            
+            fireAnim.DOPause();
+            fireAnim.DORestartById("50");
+             fireAnim.DOPlayById("50");
+
             OnReachingFuelTierEvent(50);
-           //...show notification
+           
         }
-        if (fuelCurr > 50 && fuelCurr < 100)
+        if((fuelCurr > 50 && fuelCurr < 100) && !(fuelLastUpdate > 50 && fuelLastUpdate < 100))
         {
+            fire.GetComponent<SpriteRenderer>().color = new Color(1, 0.941f, 0.667f, 1);
+            
+            fireAnim.DOPause();
+            fireAnim.DORestartById("100");
+             fireAnim.DOPlayById("100");
+
             OnReachingFuelTierEvent(100);
         }
-        
 
-        fuelStatus.GetComponent<Text>().text = Mathf.Floor((fuelCurr / fuelMax)*100) + "%";
+        fuelLastUpdate = fuelLastUpdateTemp;
+
+        fuelStatus.GetComponent<Text>().text = Mathf.Floor((fuelCurr / fuelMax)*100).ToString();
     }
 
     public void AddWood(InteractiveItem.Names name)
     {
+        
+
         if(name == InteractiveItem.Names.WoodSmall)
         {
-            GameObject newWood = Instantiate(woodSmall, spawnPoint.transform);
-            newWood.transform.position = new Vector3(newWood.transform.position.x + 1, newWood.transform.position.y , 0);
+            OnWoodAddedEvent(true);
+
             fuelCurr += 20;
+            fuelLastUpdate = 101;//to force an update
             if (fuelCurr > 100) { fuelCurr = 100; }
 
         }
         if (name == InteractiveItem.Names.WoodBig)
         {
-            GameObject newWood = Instantiate(woodBig, spawnPoint.transform);
-            newWood.transform.position = new Vector3(newWood.transform.position.x - 1, newWood.transform.position.y, 0);
+            OnWoodAddedEvent(false);
+            
             fuelCurr += 50;
+            fuelLastUpdate = 101;//to force an update
             if (fuelCurr > 100) { fuelCurr = 100; }
 
         }
