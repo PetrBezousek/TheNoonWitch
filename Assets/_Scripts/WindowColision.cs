@@ -18,9 +18,9 @@ public class WindowColision : MonoBehaviour {
     private float buchbuchTime = 3f;
 
     [SerializeField]
-    private GameObject noonWitchSpooking;
+    public GameObject noonWitchSpooking;
     [SerializeField]
-    private GameObject noonWitchWalking;
+    public GameObject noonWitchWalking;
 
     private bool isKnocking = false;
 

@@ -89,6 +89,11 @@ public class Psyche : MonoBehaviour {
     public void SubscribeToNoonWitch(GameObject noonWitch)
     {
         noonWitch.GetComponent<WindowColision>().OnNoonWitchSpookEvent += Psyche_OnNoonWitchSpookEvent;
+    } 
+    //Stop listening to item
+    public void UnSubscribeToNoonWitch(GameObject noonWitch)
+    {
+        noonWitch.GetComponent<WindowColision>().OnNoonWitchSpookEvent -= Psyche_OnNoonWitchSpookEvent;
     }
 
     //Start listening to item

@@ -45,6 +45,9 @@ public class Child : MonoBehaviour {
     [SerializeField]
     int forceY;
 
+    [SerializeField]
+    AnimationSettingsChild anim;
+
     int screamStreak = 0;
 
     bool isInGrabingMood =false;
@@ -78,6 +81,7 @@ public class Child : MonoBehaviour {
     }
     private void ScreamGraduates()
     {
+
         screamStreak++;
         if(screamStreak > -2)//možná udělat strop streaku, např. 4 s tím že od 3 už bude i chytat
         {
@@ -117,6 +121,11 @@ public class Child : MonoBehaviour {
 
             }
         }
+        else
+        {
+            anim.StartChildScream();
+        }
+
         if (OnUpdateScreamingEvent != null)
         {
             OnUpdateScreamingEvent(screamStreak);
@@ -142,6 +151,9 @@ public class Child : MonoBehaviour {
                 minigame = player.GetComponent<RootMinigame>();//save reference for invoke
 
                 minigame.MinigameStartsSoon();
+
+                anim.StartChildGrab();
+                GameObject.FindGameObjectWithTag("PlayerBody").GetComponent<AnimatorSettings>().StartStay();
 
                 Invoke("StartMinigame", 0.75f);
 

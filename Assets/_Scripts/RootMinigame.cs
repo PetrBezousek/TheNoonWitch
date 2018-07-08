@@ -52,6 +52,7 @@ public class RootMinigame : MonoBehaviour {
         {
             //set difficulty etc
             isChildRoot = false;
+            GameObject.FindGameObjectWithTag("Child").GetComponent<Child>().SetGrabChance(0);
         }
         GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent += RootMinigame_OnUpdateEvent;
 
@@ -175,6 +176,7 @@ public class RootMinigame : MonoBehaviour {
         GetComponent<PickItems>().enabled = true;
         isTaskFailed = false;
         UIInfo.text = "Released!";
+        GameObject.FindGameObjectWithTag("ChildBody").GetComponent<AnimationSettingsChild>().StartChildGrabIdleBlend();
         Invoke("ClearTxt", 1);
     }
 

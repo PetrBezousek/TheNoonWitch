@@ -26,8 +26,15 @@ public class GamePhases : MonoBehaviour {
 
     [Space]
     [Header("Latch_4")]
-    [SerializeField] MovementBySimulatedInputHorizontal noonWitch;
+    [SerializeField] MovementBySimulatedInputHorizontal noonWitchMovement;
     [SerializeField] InteractiveItem latch;
+
+    [Space]
+    [Header("EndGame_8")]
+
+    [SerializeField]
+    GameObject noonWitchObject;
+    [SerializeField] GameObject noonWitchBody;
 
     [Space]
     [Space]
@@ -112,7 +119,7 @@ public class GamePhases : MonoBehaviour {
                 //new UI phase info
                 UI.GameInfoTxt.GetComponent<Text>().text = "Latch the window";//"close" and after that tell playr to use latch
                 //enable some stuff
-                noonWitch.enabled = true;
+                noonWitchMovement.enabled = true;
                 latch.isPickable = true;
                 break;
             case Phase.ChildRoot_5:
@@ -168,6 +175,27 @@ public class GamePhases : MonoBehaviour {
                 GameObject.FindGameObjectWithTag("Child").GetComponent<Child>().SetGrabChance(100);
                 //enable simulated move
                 GameObject.FindGameObjectWithTag("Player").GetComponent<MovementBySimulatedInputHorizontal>().enabled = true;
+                //.. and some other stuff
+                GameObject.FindGameObjectWithTag("GameLogic").GetComponent<Psyche>().UnSubscribeToNoonWitch(noonWitchObject);
+
+                foreach(GameObject go in GameObject.FindGameObjectsWithTag("Window"))
+                {
+                    noonWitchObject.GetComponent<WindowColision>().UnSubscribeToNewItem(go);
+                }
+
+                noonWitchObject.GetComponent<WindowColision>().noonWitchWalking.SetActive(true);
+                noonWitchObject.GetComponent<WindowColision>().noonWitchSpooking.SetActive(false);
+
+
+                noonWitchMovement.enabled = true;
+                noonWitchMovement.moveState = MovementBySimulatedInputHorizontal.Move.Left;
+                noonWitchMovement.speed = 0.3f;
+
+                noonWitchObject.transform.position = GameObject.FindGameObjectWithTag("PointDoor").transform.position;
+
+                noonWitchBody.transform.GetChild(0).GetComponent<Anima2D.SpriteMeshInstance>().sortingLayerName = "Player";//berle
+                noonWitchBody.transform.GetChild(1).GetComponent<Anima2D.SpriteMeshInstance>().sortingLayerName = "Player";//body
+
                 //disable other minigames
                 GameObject.FindGameObjectWithTag("Player").GetComponent<PickItems>().enabled = false;
                 UI.ArrowDown.GetComponent<FixedPosition>().Hide();
@@ -177,7 +205,6 @@ public class GamePhases : MonoBehaviour {
                 kohout.isPickable = false;
                 kocar.isPickable = false;
                 husar.isPickable = false;
-                noonWitch.enabled = false;
                 latch.isPickable = false;
                 child.SetNumberOfSkips(9999999);
                 break;

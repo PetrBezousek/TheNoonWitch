@@ -13,7 +13,7 @@ public class MovementBySimulatedInputHorizontal : MonoBehaviour {
     //serialize just for testing purpose
     [Header("Speed in pixels per second")]
     [SerializeField]
-    private float speed = 30f;
+    public float speed = 30f;
     float moveValue = 0;
 
     private Move lastDirection;
