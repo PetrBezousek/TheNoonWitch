@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using DG.Tweening;
 
 public class CameraZoom : MonoBehaviour {
@@ -8,30 +9,50 @@ public class CameraZoom : MonoBehaviour {
     public float boundaryLeft;
     public float boundaryRight;
 
+    public float boundaryUp;
+    public float boundaryDown;
+
     public GameObject blackBarDown;
     public GameObject blackBarUp;
 
     public bool isZoomedIn = false;
 
+    public List<string> narative;
 
-    public GameObject txtNarative;
+    public GameObject prefabTxtNarative;
     public GameObject txtNarativeSpawn;
 
-    // Update is called once per frame
-    void Update () {
-        if (Input.GetKeyDown(KeyCode.Space))
+    public bool isGoingToThrowToys = false;
+
+    public void doCinematicNarative(List<string> _narative, Vector3 zoomPoint)
+    {
+        if (!GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().skipCinematics)
         {
-            zoomOnObject(GameObject.FindGameObjectWithTag("Player").transform.position);
+            narative = _narative;
+            zoomOnObject(zoomPoint);
         }
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            zoomOut();
-        }
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            Instantiate(txtNarative,txtNarativeSpawn.transform,false);
-        }
+        
     }
+
+    public void OnZoomedIn()
+    {
+        GetComponent<narativeLines>().setLines(narative);
+        GetComponent<narativeLines>().showNarative();
+
+        Time.timeScale = 0.1f;
+
+        //throw
+        if (isGoingToThrowToys)
+        {
+            GameObject.FindGameObjectWithTag("Child").GetComponent<Child>().SetNumberOfSkips();
+            GameObject.FindGameObjectWithTag("Child").GetComponent<Child>().CheckScream();
+            isGoingToThrowToys = false;
+        }
+
+        GameObject.FindGameObjectWithTag("SlowMotionFilter").GetComponent<Image>().DOColor(new Color(0.831f, 0.761f, 0.416f, 0.4f), 0.1f);
+    }
+
+
 
     public void zoomOnObject(Vector3 position)
     {
@@ -39,11 +60,16 @@ public class CameraZoom : MonoBehaviour {
             float x = position.x;
             if (x < boundaryLeft) { x = boundaryLeft; }
             if (x > boundaryRight) { x = boundaryRight; }
-
+        float y = position.y;
+        if (y < boundaryDown) { y = boundaryDown; }
+        if (y > boundaryUp) { y = boundaryUp; }
+        
+        
         if (isZoomedIn)
         {
             //just reposition
-            transform.DOMoveX(x, 0.8f);
+            transform.DOMove(new Vector3(x,y), 0.4f).OnComplete(OnZoomedIn);
+           
         }
         else
         {
@@ -57,8 +83,8 @@ public class CameraZoom : MonoBehaviour {
 
             //camera move
             GetComponent<DOTweenAnimation>().DORestartById("zoomIn");
-            GetComponent<DOTweenAnimation>().DOPlayById("zoomIn");            
-            transform.DOMoveX(x, 0.8f);          
+            GetComponent<DOTweenAnimation>().DOPlayById("zoomIn");
+            transform.DOMove(new Vector3(x, y,-2), 0.4f).OnComplete(OnZoomedIn);
         }
 
     }
@@ -68,7 +94,7 @@ public class CameraZoom : MonoBehaviour {
         isZoomedIn = false;
         
         //camera move
-        transform.DOMoveX(0, 1);
+        transform.DOMove(new Vector3(0, 0,-1), 0.5f);
         GetComponent<DOTweenAnimation>().DOPlayBackwardsById("zoomIn");
 
         //black bars slide out

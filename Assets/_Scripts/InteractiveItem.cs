@@ -5,9 +5,9 @@ using UnityEngine;
 public class InteractiveItem : MonoBehaviour {
     
     public bool isPickable = true;
-    public bool isUsable { get; set; }
+    public bool isUsable = true;
 
-    public enum Names {Husar, Kohout, WoodSmall,WoodBig,Fireplace,Window,Child, Latch, Kocarek, Table}
+    public enum Names {Husar, Kohout, WoodSmall,WoodBig,Fireplace,Window,Child, Latch, Kocarek, Table,Noonwitch}
     public enum Types {Pickable, Place}
     
     public Names name;
@@ -24,7 +24,6 @@ public class InteractiveItem : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         highlight = false;
-        isUsable = true;
     }
 
     public void SetOwner(GameObject newOwner)

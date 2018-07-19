@@ -233,7 +233,19 @@ public class PickItems : MonoBehaviour {
         (place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Window)
         && (place.GetComponent<Window>().windowState == Window.State.Closed)
         && (equipedItem != null) && (equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch)
-        && ((!noonWitch.isSpooking && gamePhases.currentPhase != GamePhases.Phase.Latch_4) ||(noonWitch.isSpooking && noonWitch.lastWindow == place)) )
+        && 
+            (
+            //latch phase
+                (
+                GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().currentPhase == GamePhases.Phase.Latch_4
+                && noonWitch.GetComponent<WindowColision>().isKnocking && noonWitch.lastWindow == place
+                )
+            ||  
+            //any other phase
+                (!noonWitch.isSpooking && GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().currentPhase != GamePhases.Phase.Latch_4)
+
+            )
+        )
         {
             return true;
         }
@@ -245,6 +257,19 @@ public class PickItems : MonoBehaviour {
         || equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Kocarek))
         {
             return true;
+        }
+        //noonwitch
+        if ((place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Noonwitch)
+        && (GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().currentPhase == GamePhases.Phase.EndGame_8_DONT_USE))
+        {
+            //gameover
+            GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().StartPhase(GamePhases.Phase.EndGameLoose);
+            //narative
+            GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraZoom>().doCinematicNarative(
+                new List<string>() { "Pro Kristovu drahou muku!", "klesá smyslů zbavena."  },
+                GameObject.FindGameObjectWithTag("PlayerHead").transform.position);
+
+            return false;
         }
 
         //Default false
@@ -268,13 +293,13 @@ public class PickItems : MonoBehaviour {
                         break;
                     case InteractiveItem.Names.Window:
 
-                        if (OnLatchWindowEvent != null)
-                        {
-                            OnLatchWindowEvent();
-                        }
 
                         if (equipedItem != null && equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch)
                         {
+                            if (OnLatchWindowEvent != null)
+                            {
+                                OnLatchWindowEvent();
+                            }
                             equipedItem.GetComponent<InteractiveItem>().SetOwner(theClosestPlace);
                         }
 

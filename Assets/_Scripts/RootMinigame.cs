@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class RootMinigame : MonoBehaviour {
 
@@ -30,6 +31,8 @@ public class RootMinigame : MonoBehaviour {
     [Space]
     [SerializeField]
     Transform player;
+    [SerializeField]
+    Transform child;
 
     [Space]
     [Header("How much will player be moved (Game is 18 pixels long)")]
@@ -69,15 +72,9 @@ public class RootMinigame : MonoBehaviour {
                 if (task[0] == '←')
                 {
                     task.RemoveAt(0);
-
-                    //just a UI stuff
-                    //....
-                    string s = "";
-                    foreach(char character in task){
-                        s += character;
-                    }
-                    UIInfo.text = s;
-                    //....
+                    
+                    UIInfo.text = UpdatedUI(task);
+                  
 
                     if (task.Count == 0) {
                         if (isChildRoot)
@@ -87,8 +84,7 @@ public class RootMinigame : MonoBehaviour {
                         else
                         {
                             MovePlayerBackwards();
-                            isTaskFailed = true;
-                            Invoke("NewTask", secToGetNewTask);
+                            TaskFinished("Succcess", "NewTask", secToGetNewTask);
                         }
                     }
                 }
@@ -96,16 +92,12 @@ public class RootMinigame : MonoBehaviour {
                 {
                     if (isChildRoot)
                     {
-                        isTaskFailed = true;
-                        UIInfo.text = "FAILED!";
-                        Invoke("Unroot", secToUnrootIfFailed);
+                        TaskFinished("Fail!", "Unroot", secToUnrootIfFailed);
                     }
                     else
                     {
-                        isTaskFailed = true;
-                        UIInfo.text = "FAILED!";
                         MovePlayerForwards();
-                        Invoke("NewTask", secToGetNewTask);
+                        TaskFinished("Fail!", "NewTask", secToGetNewTask);
                     }
                     
                 }
@@ -117,15 +109,10 @@ public class RootMinigame : MonoBehaviour {
                 {
                     task.RemoveAt(0);
 
-                    //just a UI stuff
-                    //....
-                    string s = "";
-                    foreach (char character in task)
-                    {
-                        s += character;
-                    }
-                    UIInfo.text = s;
-                    //....
+                   
+                    UIInfo.text = UpdatedUI(task);
+                    
+
                     if (task.Count == 0)
                     {
                         if (isChildRoot)
@@ -136,7 +123,7 @@ public class RootMinigame : MonoBehaviour {
                         {
                             MovePlayerBackwards();
                             isTaskFailed = true;
-                            Invoke("NewTask", secToGetNewTask);
+                            TaskFinished("Success", "NewTask", secToGetNewTask);
                         }
                     }
 
@@ -146,21 +133,38 @@ public class RootMinigame : MonoBehaviour {
 
                     if (isChildRoot)
                     {
-                        isTaskFailed = true;
-                        UIInfo.text = "FAILED!";
-                        Invoke("Unroot", secToUnrootIfFailed);
+                        TaskFinished("Fail", "Unroot", secToUnrootIfFailed);
                     }
                     else
                     {
-                        isTaskFailed = true;
-                        UIInfo.text = "FAILED!";
                         MovePlayerForwards();
-                        Invoke("NewTask", secToGetNewTask);
+                        TaskFinished( "Fail","NewTask", secToGetNewTask);
                     }
                 }
             }
         }
         
+    }
+
+    private void TaskFinished(string msg, string invokeNext, float afterXSeconds)
+    {
+        isTaskFailed = true;
+        UIInfo.text = msg;
+        Invoke(invokeNext, afterXSeconds);
+    }
+
+    private string UpdatedUI(List<char> task)
+    {
+
+        string s = "";
+        foreach (char character in task)
+        {
+            s += character;
+        }
+        if(s.Length > 1) { s = s.Insert(1, "   "); }
+        
+
+        return s;
     }
 
     public void MinigameStartsSoon()
@@ -196,16 +200,8 @@ public class RootMinigame : MonoBehaviour {
             }
         }
 
-
-        //just a UI stuff
-        //....
-        string s = "";
-        foreach (char character in task)
-        {
-            s += character;
-        }
-        UIInfo.text = s;
-        //....
+        
+        UIInfo.text = UpdatedUI(task);
 
         isTaskFailed = false;
     }
@@ -220,10 +216,12 @@ public class RootMinigame : MonoBehaviour {
 
     private void MovePlayerBackwards()
     {
-        player.transform.position = new Vector3(
-            player.transform.position.x - moveBackwardX,
-            player.transform.position.y,
-            player.transform.position.z);
+        player.DOMoveX(player.transform.position.x - moveBackwardX, 1);
+        child.DOMoveX(player.transform.position.x - moveBackwardX, 1);
+        /*  player.transform.position = new Vector3(
+              player.transform.position.x - moveBackwardX,
+              player.transform.position.y,
+              player.transform.position.z);*/
     }
 
     private void ClearTxt()

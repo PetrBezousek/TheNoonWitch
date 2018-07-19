@@ -22,7 +22,7 @@ public class WindowColision : MonoBehaviour {
     [SerializeField]
     public GameObject noonWitchWalking;
 
-    private bool isKnocking = false;
+    public bool isKnocking = false;
 
     public GameObject lastWindow;
 
@@ -119,7 +119,7 @@ public class WindowColision : MonoBehaviour {
         else
         {
             RaiseOnNoonWitchSpookEvent(false);
-            GetComponent<MovementBySimulatedInputHorizontal>().ResumeMoving();
+            GetComponent<MovementBySimulatedInputHorizontal>().MoveToFarerPoint();
 
             noonWitchSpooking.SetActive(false);
             noonWitchWalking.SetActive(true);

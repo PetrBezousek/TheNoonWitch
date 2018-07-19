@@ -73,7 +73,7 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
             {
 
                 lastKey = KeyCode.RightArrow;
-                chargeMoveTime += delta * timeHoldingKeyMultiplier;//charging
+                chargeMoveTime += Time.deltaTime * timeHoldingKeyMultiplier;//charging
 
                 if(chargeMoveTime > minSecondsHoldingKeyToDash)
                 {
@@ -99,7 +99,7 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
                 
 
                 lastKey = KeyCode.LeftArrow;
-                chargeMoveTime += delta * timeHoldingKeyMultiplier;//charging
+                chargeMoveTime += Time.deltaTime * timeHoldingKeyMultiplier;//charging
 
                 if (chargeMoveTime > minSecondsHoldingKeyToDash)
                 {
@@ -125,7 +125,7 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
             if (chargeMoveTime > 0)
             {
                 //test if player hits boundary
-                v3 = transform.position + (new Vector3(moveValue * currSpeed, 0, 0) * delta);
+                v3 = transform.position + (new Vector3(moveValue * currSpeed, 0, 0) * Time.deltaTime);
 
                 if (v3.x > boundXRight || v3.x < boundXLeft)
                 {
@@ -137,8 +137,8 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
                 else
                 {
                     //move
-                    transform.position = transform.position + (new Vector3(moveValue * currSpeed, 0, 0) * delta);
-                    chargeMoveTime -= delta;
+                    transform.position = transform.position + (new Vector3(moveValue * currSpeed, 0, 0) * Time.deltaTime);
+                    chargeMoveTime -= Time.deltaTime;
                     if(moveValue > 0)
                     {
                         dashMark.transform.position = new Vector3(transform.position.x + (chargeMoveTime * currSpeed), dashMark.transform.position.y);

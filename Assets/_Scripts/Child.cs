@@ -145,8 +145,9 @@ public class Child : MonoBehaviour {
           //  Debug.Log(rng + "  chance: " + grabChance/100);
             if(rng < grabChance / 100)
             {
+                if(grabChance == 100) { SetGrabChance(); }
+
                 player.GetComponent<MovementByUserInputHorizontal>().enabled = false;//cant move now
-                player.GetComponent<MovementBySimulatedInputHorizontal>().enabled = false;//cant move now
                 player.GetComponent<PickItems>().enabled = false;//cant pick items
                 minigame = player.GetComponent<RootMinigame>();//save reference for invoke
 

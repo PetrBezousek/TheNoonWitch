@@ -27,15 +27,37 @@ public class AnimatorSettings : MonoBehaviour {
     [SerializeField]
     [Range(0, 2)]
     float speedRunStayBlend;
+    [SerializeField]
+    [Range(0, 2)]
+    float speedPickingUpChild;
+    [SerializeField]
+    [Range(0, 2)]
+    float speedHoldingChildLoop;
+
+    [SerializeField] Anima2D.SpriteMeshInstance chBody;
+    [SerializeField] Anima2D.SpriteMeshInstance chHandLeft;
+    [SerializeField] Anima2D.SpriteMeshInstance chHandRight;
+    [SerializeField] Anima2D.SpriteMeshInstance chHead;
+
+    [SerializeField]
+    MovementToThePoint movePlayerToPoint;
 
     private string currentAnim;
-    
+
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            movePlayerToPoint.enabled = true;
+        }
+    }
 
     private void Start()
     {
         anim.Play("Stay");
         anim.speed = speedStay;
-        currentAnim = "Stay";
+        currentAnim = "Stay";       
     }
 
     public void StartStay()
@@ -79,5 +101,36 @@ public class AnimatorSettings : MonoBehaviour {
         anim.Play("Runing");
         anim.speed = speedRunningFinaly;
         currentAnim = "Runing";
+    }
+    
+    public void StartPickingUpChild()
+    {
+        anim.Play("PickingUpChild");
+        anim.speed = speedPickingUpChild;
+        currentAnim = "PickingUpChild";
+    }
+    public void StartHoldingChildLoop()
+    {
+        anim.Play("HoldingChildLoop");
+        anim.speed = speedHoldingChildLoop;
+        currentAnim = "HoldingChildLoop";
+    }
+
+    public void PutChildInFront()
+    {
+        chBody.sortingLayerName = "Player";
+        chHandLeft.sortingLayerName ="Player";
+        chHandRight.sortingLayerName ="Player";
+        chHead.sortingLayerName ="Player";
+
+        chBody.sortingOrder = 550;
+        chHandLeft.sortingOrder = 525;
+        chHandRight.sortingOrder = 500;
+        chHead.sortingOrder = 555;
+    }
+
+    public void StartChildGetingPickedUp()
+    {
+        GameObject.FindGameObjectWithTag("ChildBody").GetComponent<AnimationSettingsChild>().StartPlayerPicksChildUp();
     }
 }

@@ -28,11 +28,16 @@ public class AnimationSettingsChild : MonoBehaviour {
     [SerializeField]
     [Range(0, 10)]
     float speedChildGrabIdleBlend;
+    [SerializeField]
+    [Range(0, 2)]
+    float speedPlayerPicksChildUp;
+    [SerializeField]
+    [Range(0, 2)]
+    float speedPlayerHoldsChildLoop;
 
 
     private string currentAnim;
-
-
+    
     private void Start()
     {
         anim.Play("ChildIdle");
@@ -79,6 +84,18 @@ public class AnimationSettingsChild : MonoBehaviour {
         anim.speed = speedChildGrabIdleBlend;
         currentAnim = "ChildGrabIdleBlend";
     }
+    public void StartPlayerPicksChildUp()
+    {
+        anim.Play("PlayerPicksChildUp");
+        anim.speed = speedPlayerPicksChildUp;
+        currentAnim = "PlayerPicksChildUp";
+    }
+    public void StartPlayerHoldsChildLoop()
+    {
+        anim.Play("PlayerHoldsChildLoop");
+        anim.speed = speedPlayerHoldsChildLoop;
+        currentAnim = "PlayerHoldsChildLoop";
+    }
 
     public void putHandsInFront()
     {
@@ -88,6 +105,7 @@ public class AnimationSettingsChild : MonoBehaviour {
         rightHand.sortingLayerName = "Player";
         rightHand.sortingOrder = 2001;
     }
+    
 
     public void putHandsInBack()
     {
