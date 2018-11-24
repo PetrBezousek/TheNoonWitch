@@ -56,27 +56,29 @@ public class Psyche : MonoBehaviour {
 
     private void SubtractPsyche()
     {
-        float psycheLoss = (fireplace + noonWitch + child) * psycheLossSpeed;
-        if(psycheCurr != psycheCurr - psycheLoss)
+        if(!(GetComponent<GamePhases>().currentPhase == GamePhases.Phase.Start_1_DONT_USE))
         {
-            if((psycheCurr - psycheLoss) < 0)
+            float psycheLoss = (fireplace + noonWitch + child) * psycheLossSpeed;
+            if (psycheCurr != psycheCurr - psycheLoss)
             {
-                psycheCurr = 0;
+                if ((psycheCurr - psycheLoss) < 0)
+                {
+                    psycheCurr = 0;
 
-                CancelInvoke("SubtractPsyche");
+                    CancelInvoke("SubtractPsyche");
 
-                //zapni fázi
-                GetComponent<GamePhases>().StartPhase(GamePhases.Phase.EndGame_8_DONT_USE);
+                    //zapni fázi
+                    GetComponent<GamePhases>().StartPhase(GamePhases.Phase.EndGame_8_DONT_USE);
 
+                }
+                else
+                {
+                    psycheCurr -= psycheLoss;
+                }
+                //event for status bars
+                OnPsycheChangedEvent(psycheCurr);
             }
-            else
-            {
-                psycheCurr -= psycheLoss;
-            }
-            //event for status bars
-            OnPsycheChangedEvent(psycheCurr);
         }
-        
     }
 
     //Start listening to item ... (if I wanted to make more then one fireplace at runtime, I need this method)
@@ -109,21 +111,25 @@ public class Psyche : MonoBehaviour {
         if(screamStreak == 0)
         {
             UI.GetComponent<UIManager>().ScreamStreakCount.GetComponent<Text>().text = "";//clear text
-            UI.GetComponent<UIManager>().Child.GetComponent<Image>().color = new Color(1f, 0.859f, 0.667f, 0.3f);
+            UI.GetComponent<UIManager>().Child.GetComponent<Image>().DOColor(new Color(1f, 0.859f, 0.667f, 0f), 0.5f)
+                .OnComplete(() => { UI.GetComponent<UIManager>().Child.SetActive(false); });
         }
         else
         {
             UI.GetComponent<UIManager>().ScreamStreakCount.GetComponent<Text>().text = screamStreak + "x";
-             UIAnimChange(UI.GetComponent<UIManager>().Child.GetComponent<DOTweenAnimation>());
+            UIAnimChange(UI.GetComponent<UIManager>().Child.GetComponent<DOTweenAnimation>());
 
             if (screamStreak > 0 && screamStreak <= 2)
             {
-                UI.GetComponent<UIManager>().Child.GetComponent<Image>().color = new Color(0.667f, 0.475f, 0.224f, 1f);
+
+                UI.GetComponent<UIManager>().Child.SetActive(true);
+                UI.GetComponent<UIManager>().Child.GetComponent<Image>().DOColor(new Color(0.667f, 0.475f, 0.224f, 0.8f),0.2f);
             }
             else
             if (screamStreak > 2)
             {
-                UI.GetComponent<UIManager>().Child.GetComponent<Image>().color = new Color(0.333f, 0.192f, 0f, 1f);
+                UI.GetComponent<UIManager>().Child.SetActive(true);
+                UI.GetComponent<UIManager>().Child.GetComponent<Image>().DOColor(new Color(0.333f, 0.192f, 0f, 1f),0.2f);
             }
         }
 
@@ -134,13 +140,15 @@ public class Psyche : MonoBehaviour {
     {
         if (isSpooking)
         {
-            UI.GetComponent<UIManager>().NoonWitch.GetComponent<Image>().color = new Color(0.333f, 0.275f, 0f, 1f);
+            UI.GetComponent<UIManager>().NoonWitch.SetActive(true);
+            UI.GetComponent<UIManager>().NoonWitch.GetComponent<Image>().DOColor(new Color(0.333f, 0.275f, 0f, 1f),0.2f);
             UIAnimChange(UI.GetComponent<UIManager>().NoonWitch.GetComponent<DOTweenAnimation>());
             noonWitch = noonwitchSpooking;
         }
         else
         {
-            UI.GetComponent<UIManager>().NoonWitch.GetComponent<Image>().color = new Color(1f, 0.941f, 0.667f, 0.3f);
+            UI.GetComponent<UIManager>().NoonWitch.GetComponent<Image>().DOColor(new Color(1f, 0.941f, 0.667f, 0f),0.5f)
+                .OnComplete(() => { UI.GetComponent<UIManager>().NoonWitch.SetActive(false); }); 
             noonWitch = 0;
         }
     }
@@ -150,19 +158,25 @@ public class Psyche : MonoBehaviour {
         if(tier == 100)
         {
             //first warning UI
-            UI.GetComponent<UIManager>().Fire.GetComponent<Image>().color = new Color(0.533f,0.486f, 0.686f,0.3f);
+            UI.GetComponent<UIManager>().Fire.GetComponent<Image>().DOColor(new Color(0.533f,0.486f, 0.686f,0f),0.5f)
+                .OnComplete(() => { UI.GetComponent<UIManager>().Fire.SetActive(false); });
 
             fireplace = 0;
         }
         if (tier == 50)
         {
+
+            UI.GetComponent<UIManager>().Fire.GetComponent<Image>().DOColor(new Color(0.533f, 0.486f, 0.686f, 0f), 0.5f)
+                .OnComplete(() => { UI.GetComponent<UIManager>().Fire.SetActive(false); });
+
             //first warning UI (but player is not loosing psyche yet..)
             //UI.GetComponent<UIManager>().UIFire.GetComponent<Image>().color = new Color(0.533f, 0.486f, 0.686f, 0.8f);
         }
         if (tier == 10)
         {
             //second warning UI
-            UI.GetComponent<UIManager>().Fire.GetComponent<Image>().color = new Color(0.251f, 0.188f, 0.459f,1);
+            UI.GetComponent<UIManager>().Fire.SetActive(true);
+            UI.GetComponent<UIManager>().Fire.GetComponent<Image>().DOColor(new Color(0.251f, 0.188f, 0.459f,0f),0.2f);
             UIAnimChange(UI.GetComponent<UIManager>().Fire.GetComponent<DOTweenAnimation>());
 
             fireplace = fireplace10Percent;
@@ -170,7 +184,8 @@ public class Psyche : MonoBehaviour {
         if (tier == 0)
         {
             //third warning UI
-            UI.GetComponent<UIManager>().Fire.GetComponent<Image>().color = new Color(0.075f, 0.027f, 0.227f, 1);
+            UI.GetComponent<UIManager>().Fire.SetActive(true);
+            UI.GetComponent<UIManager>().Fire.GetComponent<Image>().DOColor(new Color(0.075f, 0.027f, 0.227f, 1),0.2f);
             UIAnimChange(UI.GetComponent<UIManager>().Fire.GetComponent<DOTweenAnimation>());
 
             fireplace = fireplace0Percent;

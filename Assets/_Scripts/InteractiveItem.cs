@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class InteractiveItem : MonoBehaviour {
     
@@ -21,8 +22,23 @@ public class InteractiveItem : MonoBehaviour {
 
     private bool highlight { get; set; }
 
-	// Use this for initialization
-	void Start () {
+    private void Update()
+    {
+        if (GetComponent<DOTweenVisualManager>())
+        {
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                GetComponent<DOTweenVisualManager>().enabled = true;
+            }
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                GetComponent<DOTweenVisualManager>().enabled = false;
+            }
+        }
+    }
+
+    // Use this for initialization
+    void Start () {
         highlight = false;
     }
 
@@ -47,7 +63,7 @@ public class InteractiveItem : MonoBehaviour {
     public void HighlightSelf()
     {
         highlight = true;
-        GetComponent<Renderer>().material.color = new Color(GetComponent<Renderer>().material.color.r, GetComponent<Renderer>().material.color.g, GetComponent<Renderer>().material.color.b, 0.5f);
+        GetComponent<Renderer>().material.color = new Color(GetComponent<Renderer>().material.color.r, GetComponent<Renderer>().material.color.g, GetComponent<Renderer>().material.color.b, 0.8f);
         // Debug.Log("Highlighted!");
     }
 

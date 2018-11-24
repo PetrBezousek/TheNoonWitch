@@ -22,6 +22,9 @@ public class WindowColision : MonoBehaviour {
     [SerializeField]
     public GameObject noonWitchWalking;
 
+    [SerializeField]
+    public GameObject latch;
+
     public bool isKnocking = false;
 
     public GameObject lastWindow;
@@ -36,48 +39,21 @@ public class WindowColision : MonoBehaviour {
     private void WindowColision_OnUpdateNotifyAboutItselfEvent(GameObject window)
     {
         //am I in range of new window
-        if((window != lastWindow)
-            &&(Math.Abs(transform.position.x - window.transform.position.x) < range))
+        if ((window != lastWindow)
+            && (Math.Abs(transform.position.x - window.transform.position.x) <= range))
         {
             lastWindow = window;//breaks infinite updating
-
-            GetComponent<MovementBySimulatedInputHorizontal>().moveState = MovementBySimulatedInputHorizontal.Move.Stay;//becaouse witch always stops
-
-            switch (window.GetComponent<Window>().windowState)
-            {
-                case Window.State.Closed:
-                    isKnocking = true;
-
-                    //start animation
-                    window.GetComponent<Window>().FrameClosed.GetComponent<DOTweenAnimation>().DORestartById("Knock");
-                    window.GetComponent<Window>().FrameClosed.GetComponent<DOTweenAnimation>().DOPlayById("Knock");
-                   
-
-                    Invoke("TryToOpenWindow", buchbuchTime);//wait 3 seconds (buch! buch)
-                    break;
-                case Window.State.Opened:
-                    isSpooking = true;
-                    OnNoonWitchSpookEvent(true);//bububu
-                    break;
-                case Window.State.Latched:
-                    isKnocking = true;
-
-                    //start animation
-                    window.GetComponent<Window>().FrameClosed.GetComponent<DOTweenAnimation>().DORestartById("Knock");
-                    window.GetComponent<Window>().FrameClosed.GetComponent<DOTweenAnimation>().DOPlayById("Knock");
-
-                    Invoke("TryToOpenWindow", buchbuchTime);//wait 3 seconds (buch! buch)
-                    break;
-            }
         }
+
+        //GetComponent<MovementBySimulatedInputHorizontal>().moveState = MovementBySimulatedInputHorizontal.Move.Stay;//becaouse witch always stops
+        
         //Noon witch is spooking and player shut window
         if ((window == lastWindow)
-            && (Math.Abs(transform.position.x - window.transform.position.x) < range)
+            && (Math.Abs(transform.position.x - window.transform.position.x) <= range)
             && !isKnocking
-            && window.GetComponent<Window>().windowState != Window.State.Opened
-            && GetComponent<MovementBySimulatedInputHorizontal>().moveState == MovementBySimulatedInputHorizontal.Move.Stay)
+            && !GetComponent<MovementBySimulatedInputHorizontal>().isOnTheWay()
+            && window.GetComponent<Window>().windowState != Window.State.Opened)
         {
-
             isSpooking = false;
             OnNoonWitchSpookEvent(false);//bububu.. pls staph
             isKnocking = true;//breaks infinite update
@@ -101,9 +77,11 @@ public class WindowColision : MonoBehaviour {
     private void TryToOpenWindow()
     {
         isKnocking = false;
-
         //stop animation
         lastWindow.GetComponent<Window>().FrameClosed.GetComponent<DOTweenAnimation>().DOPause();
+
+
+        GameObject logic = GameObject.FindGameObjectWithTag("GameLogic");
 
         if(lastWindow.GetComponent<Window>().windowState != Window.State.Latched)
         {
@@ -118,11 +96,16 @@ public class WindowColision : MonoBehaviour {
         }
         else
         {
-            RaiseOnNoonWitchSpookEvent(false);
-            GetComponent<MovementBySimulatedInputHorizontal>().MoveToFarerPoint();
+            if (!isKnocking)
+            {
+                RaiseOnNoonWitchSpookEvent(false);
+                GetComponent<MovementBySimulatedInputHorizontal>().MoveToFarerPoint();
+                lastWindow = null;
 
-            noonWitchSpooking.SetActive(false);
-            noonWitchWalking.SetActive(true);
+                noonWitchSpooking.SetActive(false);
+                noonWitchWalking.SetActive(true);
+            }
+
         }
     }
 

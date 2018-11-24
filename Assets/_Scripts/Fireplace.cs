@@ -28,10 +28,12 @@ public class Fireplace : MonoBehaviour {
 
     ParticleSystem.MainModule steamSettings;
 
+    SoundManager sound;
+
     [Space]
     [Header("Current fuel")]
     [SerializeField]
-    private float fuelCurr;
+    public float fuelCurr;
 
     private float fuelLastUpdate;
 
@@ -40,6 +42,10 @@ public class Fireplace : MonoBehaviour {
     [SerializeField]
     private float burnSpeed = 5;
 
+    private void Awake()
+    {
+        sound = GameObject.FindGameObjectWithTag("SoundManager").GetComponent<SoundManager>();
+    }
 
     // Use this for initialization
     void Start ()
@@ -48,7 +54,7 @@ public class Fireplace : MonoBehaviour {
 
         fireAnim = fire.GetComponent<DOTweenAnimation>();
 
-        fuelCurr = fuelMax;
+        fuelCurr = 5;
         //subscribe to Update
         GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent += Fireplace_OnUpdateEvent;
         GameObject.FindGameObjectWithTag("GameLogic").GetComponent<Psyche>().SubscribeToFireplace(gameObject);
@@ -59,12 +65,17 @@ public class Fireplace : MonoBehaviour {
     {
         float fuelLastUpdateTemp = fuelCurr;
 
-        //if fire is burning
-        if (fuelCurr > 0)
+        if(GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().currentPhase != GamePhases.Phase.Start_1_DONT_USE)
         {
-            fuelCurr -= burnSpeed * Time.deltaTime;
+            //if fire is burning
+            if (fuelCurr > 0)
+            {
+                fuelCurr -= burnSpeed * Time.deltaTime;
+            }
+            else { fuelCurr = 0; }
+
         }
-        else { fuelCurr = 0; }
+
         //0%
         if((fuelCurr <= 0) && !(fuelLastUpdate <= 0))
         {
@@ -75,7 +86,7 @@ public class Fireplace : MonoBehaviour {
             pot.GetComponent<DOTweenAnimation>().DORewind();
             pot.GetComponent<DOTweenAnimation>().DOPause();
 
-            SoundManager.StopSound("PotCooking");
+            sound.StopSound("PotCooking");
 
             steamSettings.startColor = new Color(0.533f, 0.486f, 0.686f, 0f);
 
@@ -110,7 +121,7 @@ public class Fireplace : MonoBehaviour {
             pot.GetComponent<DOTweenAnimation>().DORestartById("Boiling");
             pot.GetComponent<DOTweenAnimation>().DOPlayById("Boiling");
 
-            SoundManager.PlaySound("PotCooking");
+            sound.PlaySound("PotCooking");
 
             fireAnim.DOPause();
             fireAnim.DORestartById("50");
@@ -128,7 +139,7 @@ public class Fireplace : MonoBehaviour {
             pot.GetComponent<DOTweenAnimation>().DORestartById("Boiling");
             pot.GetComponent<DOTweenAnimation>().DOPlayById("Boiling");
             
-            SoundManager.PlaySound("PotCooking");
+            sound.PlaySound("PotCooking");
 
             fireAnim.DOPause();
             fireAnim.DORestartById("100");

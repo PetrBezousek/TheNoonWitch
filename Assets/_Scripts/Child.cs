@@ -147,6 +147,7 @@ public class Child : MonoBehaviour {
             {
                 if(grabChance == 100) { SetGrabChance(); }
 
+                player.GetComponent<MovementByUserInputHorizontal>().Stop();//player movement is stopped, not paused
                 player.GetComponent<MovementByUserInputHorizontal>().enabled = false;//cant move now
                 player.GetComponent<PickItems>().enabled = false;//cant pick items
                 minigame = player.GetComponent<RootMinigame>();//save reference for invoke

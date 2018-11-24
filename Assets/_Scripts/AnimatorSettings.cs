@@ -33,6 +33,9 @@ public class AnimatorSettings : MonoBehaviour {
     [SerializeField]
     [Range(0, 2)]
     float speedHoldingChildLoop;
+    [SerializeField]
+    [Range(0, 2)]
+    float speedScream;
 
     [SerializeField] Anima2D.SpriteMeshInstance chBody;
     [SerializeField] Anima2D.SpriteMeshInstance chHandLeft;
@@ -44,14 +47,16 @@ public class AnimatorSettings : MonoBehaviour {
 
     private string currentAnim;
 
+    [SerializeField]
+    MovementByUserInputHorizontal playerMovement;
 
-    private void Update()
+   /*private void Update()
     {
         if (Input.GetKeyDown(KeyCode.A))
         {
-            movePlayerToPoint.enabled = true;
+            StartScream();
         }
-    }
+    }*/ 
 
     private void Start()
     {
@@ -65,6 +70,12 @@ public class AnimatorSettings : MonoBehaviour {
         anim.Play("RunStayBlend");
         anim.speed = speedRunStayBlend;
         currentAnim = "RunStayBlend";
+    }
+    public void StartScream()
+    {
+        anim.Play("PlayerScream");
+        anim.speed = speedScream;
+        currentAnim = "PlayerScream";
     }
     public void StartStayFinaly()
     {
@@ -85,22 +96,31 @@ public class AnimatorSettings : MonoBehaviour {
 
     public void StartMaximumCharge()
     {
-        anim.Play("ChargingMax");
-        anim.speed = speedChargingMax;
-        currentAnim = "ChargingMax";
+        if (!playerMovement.startChargedMove)
+        {
+            anim.Play("ChargingMax");
+            anim.speed = speedChargingMax;
+            currentAnim = "ChargingMax";
+        }
     }
 
     public void StartRunning()
     {
-        anim.Play("Run");
-        anim.speed = speedRunning;
-        currentAnim = "Run";
+        if (currentAnim != "RunStayBlend")
+        {
+            anim.Play("Run");
+            anim.speed = speedRunning;
+            currentAnim = "Run";
+        }
     }
     public void StartRunningFinaly()
     {
-        anim.Play("Runing");
-        anim.speed = speedRunningFinaly;
-        currentAnim = "Runing";
+        if(playerMovement.chargeMoveTime > 0)//im 100% sure it fixes bug with run animation persisting
+        {
+            anim.Play("Runing");
+            anim.speed = speedRunningFinaly;
+            currentAnim = "Runing";
+        }
     }
     
     public void StartPickingUpChild()

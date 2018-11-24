@@ -42,7 +42,7 @@ public class UITime : MonoBehaviour {
                     startClockImpossible = true;
                 }
             }
-            timeTxt.text = (Mathf.Floor(secondsHardPhase)).ToString();
+            timeTxt.text = (Mathf.Floor(secondsHardPhase) + secondsImpossiblePhase).ToString();
         }
         if (startClockImpossible)
         {

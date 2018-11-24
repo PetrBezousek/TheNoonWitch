@@ -109,10 +109,10 @@ public class AnimationSettingsChild : MonoBehaviour {
 
     public void putHandsInBack()
     {
-        leftHand.sortingLayerName = "Items";
+        leftHand.sortingLayerName = "Background";
         leftHand.sortingOrder = 151;
 
-        rightHand.sortingLayerName = "Items";
+        rightHand.sortingLayerName = "Background";
         rightHand.sortingOrder = 149;
     }
 }

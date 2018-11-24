@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
 
 public class FixedPosition : MonoBehaviour {
 
@@ -28,7 +30,6 @@ public class FixedPosition : MonoBehaviour {
 
     private void FixedPosition_OnUpdateEvent()
     {
-
         if(parent != null && !isHidden)
         {
             transform.position = new Vector3(parent.position.x + offsetX, parent.position.y + offsetY);
@@ -69,7 +70,8 @@ public class FixedPosition : MonoBehaviour {
     {
         if (!isHidden)
         {
-            //UI
+            // UI
+            
             if (GetComponent<CanvasRenderer>())
             {
                 isHidden = true;
@@ -77,7 +79,14 @@ public class FixedPosition : MonoBehaviour {
             
             }
 
-            //Game object
+            // Image
+            if (GetComponent<Image>())
+            {
+                isHidden = true;
+                GetComponent<Image>().DOFade(0, 0.1f);//alpha
+            }
+
+            // Game object
             if (GetComponent<Renderer>())
             {
                 isHidden = true;
@@ -86,7 +95,7 @@ public class FixedPosition : MonoBehaviour {
                     GetComponent<Renderer>().material.color.r,
                     GetComponent<Renderer>().material.color.g,
                     GetComponent<Renderer>().material.color.b,
-                    0f);//alpha
+                    0f);// alpha
             }
 
         }
@@ -98,10 +107,18 @@ public class FixedPosition : MonoBehaviour {
         if (isHidden)
         {
             //UI
+            
             if (GetComponent<CanvasRenderer>())
             {
                 isHidden = false;
                 GetComponent<CanvasRenderer>().SetAlpha(1f);//alpha
+            }
+
+            // Image
+            if (GetComponent<Image>())
+            {
+                isHidden = false;
+                GetComponent<Image>().DOFade(1f, 0.5f);//alpha
             }
 
             //Game object
@@ -113,7 +130,7 @@ public class FixedPosition : MonoBehaviour {
                     GetComponent<Renderer>().material.color.r,
                     GetComponent<Renderer>().material.color.g,
                     GetComponent<Renderer>().material.color.b,
-                    1f);//alpha
+                    0.3f);//alpha
             }
         }
         

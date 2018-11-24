@@ -20,14 +20,16 @@ public class MovementBySimulatedInputHorizontal : MonoBehaviour {
     [Header("How many seconds it takes to get to point B")]
     public float timeToMove;
 
-    private Move lastDirection;
+    private bool isMoving = false;
+
+    /*private Move lastDirection;
 
     public enum Move { Left, Right, Stay}
     public Move moveState = new Move();
-
+    */
     void Start()
     {
-        moveState = Move.Left;
+       // moveState = Move.Left;
     }
 
     private void OnEnable()
@@ -37,15 +39,24 @@ public class MovementBySimulatedInputHorizontal : MonoBehaviour {
         MoveToFarerPoint();
     }
 
+    public bool isOnTheWay()
+    {
+        return isMoving;
+    }
+
     public void MoveToFarerPoint()
     {
         if (Mathf.Abs(transform.position.x - boundaryLeft) < Mathf.Abs(transform.position.x - boundaryRight))
         {
-            transform.DOMoveX(boundaryRight, timeToMove);
+            transform.DOMoveX(boundaryRight, timeToMove)
+                .OnStart(() => { isMoving = true; })
+                .OnComplete(() => { isMoving = false; });
         }
         else
         {
-            transform.DOMoveX(boundaryLeft, timeToMove);
+            transform.DOMoveX(boundaryLeft, timeToMove)
+                .OnStart(() => { isMoving = true; })
+                .OnComplete(() => { isMoving = false; });
         }
 
     }

@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
+using UnityEngine.UI;
 
 public class PickItems : MonoBehaviour {
 
@@ -15,6 +17,9 @@ public class PickItems : MonoBehaviour {
 
     [SerializeField]
     UIManager UI;
+
+    [SerializeField]
+    GameObject latch;
 
     [Space]
     [Header("Grab item range in pixels (Game is 18 pixels long)")]
@@ -138,6 +143,15 @@ public class PickItems : MonoBehaviour {
             theClosestPickable.GetComponent<InteractiveItem>().SetOwner(gameObject);
 
             UI.ArrowDown.GetComponent<FixedPosition>().Hide();
+
+            if (theClosestPickable.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch)
+            {
+                gamePhases.itsTimeForHighligtingLatch = false;
+                if (theClosestPickable.transform.childCount > 0 && theClosestPickable.transform.GetChild(0))
+                {
+                    // Destroy(theClosestPickable);
+                }
+            }
 
             //is it toy?
             if (theClosestPickable.GetComponent<Rigidbody2D>())
@@ -268,12 +282,31 @@ public class PickItems : MonoBehaviour {
             GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraZoom>().doCinematicNarative(
                 new List<string>() { "Pro Kristovu drahou muku!", "klesá smyslů zbavena."  },
                 GameObject.FindGameObjectWithTag("PlayerHead").transform.position);
+            Invoke("showResetBtn", 4f);
 
             return false;
         }
 
         //Default false
         return false;
+    }
+
+    private void showResetBtn()
+    {
+        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().btnReset.GetComponent<Button>().interactable = true;
+        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().btnReset.GetComponent<Image>().DOFade(1, 1);
+    }
+
+    private void HighlightLatch()
+    {
+        if (gamePhases.itsTimeForHighligtingLatch && ((equipedItem != null && equipedItem.GetComponent<InteractiveItem>().name != InteractiveItem.Names.Latch) || equipedItem == null))
+        {
+            gamePhases.HighlightItem(latch);
+        }
+        else
+        {
+            CancelInvoke("HighlightLatch");
+        }
     }
 
     //make operation with given place
@@ -292,16 +325,22 @@ public class PickItems : MonoBehaviour {
                         equipedItem = null;
                         break;
                     case InteractiveItem.Names.Window:
-
-
                         if (equipedItem != null && equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch)
                         {
+                            gamePhases.itsTimeForHighligtingLatch = false;
                             if (OnLatchWindowEvent != null)
                             {
                                 OnLatchWindowEvent();
                             }
                             equipedItem.GetComponent<InteractiveItem>().SetOwner(theClosestPlace);
                         }
+                        else
+                        {
+                            gamePhases.itsTimeForHighligtingLatch = true;
+
+                            InvokeRepeating("HighlightLatch", 2, 2);
+                        }
+
 
                         //window listens to this
                         OnWindowUsedEvent(gameObject);
@@ -340,7 +379,18 @@ public class PickItems : MonoBehaviour {
                         
                         //position
                         equipedItem.transform.parent = theClosestPlace.transform;
-                        equipedItem.transform.localPosition = new Vector3(0, 0, 0);
+                        if (equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Husar)
+                        {
+                            equipedItem.transform.localPosition = new Vector3(-2, 0, 0);
+                        }else if(equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Kohout)
+                        {
+                            equipedItem.transform.localPosition = new Vector3(1, -0.05f, 0);
+                        }
+                        else if(equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Kocarek)
+                        {
+                            equipedItem.transform.localPosition = new Vector3(6, -0.1f, 0);
+                        }
+
 
                         equipedItem.GetComponent<InteractiveItem>().isPickable = false;
                         equipedItem = null;//'couse I used it just now 

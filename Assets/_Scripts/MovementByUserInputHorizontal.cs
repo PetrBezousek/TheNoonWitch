@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class MovementByUserInputHorizontal : MonoBehaviour {
 
@@ -12,7 +13,7 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
     GameObject dashMark;
 
     [SerializeField]
-    AnimatorSettings anim;
+    public AnimatorSettings anim;
 
     //serialize just for testing purpose
     [Space]
@@ -39,16 +40,37 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
     private float timeHoldingKeyMultiplier = 1f;//1 = 2s držení tlačítka, 2s dash kupředu ... 0.5 = 2s, 1s
     
     float delta;
-    float chargeMoveTime;
-    bool startChargedMove = false;
+    public float chargeMoveTime;
+    public bool startChargedMove = false;
     KeyCode lastKey;
+
+    public bool isNotMoving = true;
 
     Vector3 v3;
 
     [SerializeField]
-    float boundXRight;
+    public float boundXRight;
     [SerializeField]
-    float boundXLeft;
+    public float boundXLeft;
+
+    private SoundManager sound;
+
+    [SerializeField] GameObject tutorArrowLeft;
+    [SerializeField] GameObject tutorArrowRight;
+
+    private void Awake()
+    {
+        sound = GameObject.FindGameObjectWithTag("SoundManager").GetComponent<SoundManager>();
+    }
+
+    private void hideTutorArrows()
+    {
+        isNotMoving = false;
+        tutorArrowLeft.SetActive(false);
+        tutorArrowRight.SetActive(false);
+        // tutorArrowLeft.GetComponent<FixedPosition>().Hide();
+        // tutorArrowRight.GetComponent<FixedPosition>().Hide();
+    }
 
     //Update
     private void UpdateManager_OnUpdateEvent()
@@ -71,7 +93,7 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
         {
             if (Input.GetKey(KeyCode.RightArrow))
             {
-
+                hideTutorArrows();
                 lastKey = KeyCode.RightArrow;
                 chargeMoveTime += Time.deltaTime * timeHoldingKeyMultiplier;//charging
 
@@ -79,14 +101,22 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
                 {
                     anim.StartCharging();
                     ObjectImagePositionScript.FlipX(true);
-                    dashMark.SetActive(true);
+                    dashMark.GetComponent<SpriteRenderer>().DOFade(1, 0.2f);
                     // (transform.position.x + (chargeMoveTime*currSpeed))   .....   místo na které hráč dasahne
-                    dashMark.transform.position = new Vector3(transform.position.x + (chargeMoveTime * currSpeed),dashMark.transform.position.y);
+                    if (transform.position.x + (chargeMoveTime * currSpeed) < boundXRight)
+                    {
+                        dashMark.transform.position = new Vector3(transform.position.x + (chargeMoveTime * currSpeed), dashMark.transform.position.y);
+                    }
+                    else
+                    {
+                        dashMark.transform.position = new Vector3(boundXRight, dashMark.transform.position.y);
+                    }
                 }
 
             }else if(chargeMoveTime > minSecondsHoldingKeyToDash && lastKey == KeyCode.RightArrow)
             {
                 //START charge right
+                sound.PlaySound("Tap");
                 anim.StartRunning();
                 ObjectImagePositionScript.FlipX(true);
                 moveValue = 1;
@@ -96,8 +126,7 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
 
             if (Input.GetKey(KeyCode.LeftArrow))
             {
-                
-
+                hideTutorArrows();
                 lastKey = KeyCode.LeftArrow;
                 chargeMoveTime += Time.deltaTime * timeHoldingKeyMultiplier;//charging
 
@@ -105,14 +134,22 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
                 {
                     anim.StartCharging();
                     ObjectImagePositionScript.FlipX(false);
-                    dashMark.SetActive(true);
+                    dashMark.GetComponent<SpriteRenderer>().DOFade(1, 0.2f);
                     // (transform.position.x - (chargeMoveTime*currSpeed))   .....   místo na které hráč dashne
-                    dashMark.transform.position = new Vector3(transform.position.x - (chargeMoveTime * currSpeed), dashMark.transform.position.y);
+                    if (transform.position.x - (chargeMoveTime * currSpeed) > boundXLeft)
+                    {
+                        dashMark.transform.position = new Vector3(transform.position.x - (chargeMoveTime * currSpeed), dashMark.transform.position.y);
+                    }
+                    else
+                    {
+                        dashMark.transform.position = new Vector3(boundXLeft, dashMark.transform.position.y);
+                    }
                 }
             }
             else if (chargeMoveTime > minSecondsHoldingKeyToDash && lastKey == KeyCode.LeftArrow)
             {
                 //START charge left
+                sound.PlaySound("Tap");
                 anim.StartRunning();
                 ObjectImagePositionScript.FlipX(false);
                 moveValue = -1;
@@ -130,9 +167,7 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
                 if (v3.x > boundXRight || v3.x < boundXLeft)
                 {
                     //stop
-                    chargeMoveTime = 0;
-                    startChargedMove = false;
-                    anim.StartStay();
+                    Stop();
                 }
                 else
                 {
@@ -141,25 +176,45 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
                     chargeMoveTime -= Time.deltaTime;
                     if(moveValue > 0)
                     {
-                        dashMark.transform.position = new Vector3(transform.position.x + (chargeMoveTime * currSpeed), dashMark.transform.position.y);
+                        if (transform.position.x + (chargeMoveTime * currSpeed) < boundXRight)
+                        {
+                            dashMark.transform.position = new Vector3(transform.position.x + (chargeMoveTime * currSpeed), dashMark.transform.position.y);
+                        }
+                        else
+                        {
+                            dashMark.transform.position = new Vector3(boundXRight, dashMark.transform.position.y);
+                        }
                     }
                     else
                     {
-                        dashMark.transform.position = new Vector3(transform.position.x - (chargeMoveTime * currSpeed), dashMark.transform.position.y);
+                        if (transform.position.x - (chargeMoveTime * currSpeed) > boundXLeft)
+                        {
+                            dashMark.transform.position = new Vector3(transform.position.x - (chargeMoveTime * currSpeed), dashMark.transform.position.y);
+                        }
+                        else
+                        {
+                            dashMark.transform.position = new Vector3(boundXLeft, dashMark.transform.position.y);
+                        }
                     }
                     
                 }
             }
             else
             {
-                anim.StartStay();
-                startChargedMove = false;
-                dashMark.SetActive(false);
+                Stop();
             }
         }
         
     }
-    
+
+    public void Stop()
+    {
+        chargeMoveTime = 0;
+        sound.StopSound("Tap");
+        anim.StartStay();
+        startChargedMove = false;
+        dashMark.GetComponent<SpriteRenderer>().DOFade(0, 0.5f);
+    }
 
     public void DebuffSpeed(float debuff)
     {
@@ -169,8 +224,8 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
 
     private void OnDisable()
     {
-            //unsubscribe from Update
-            GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent -= UpdateManager_OnUpdateEvent;
+        //unsubscribe from Update
+        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent -= UpdateManager_OnUpdateEvent;
        
     }
     private void OnEnable()

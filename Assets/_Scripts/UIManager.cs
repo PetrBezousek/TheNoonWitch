@@ -10,6 +10,9 @@ public class UIManager : MonoBehaviour {
     public GameObject ArrowDown;
 
     [SerializeField]
+    public GameObject ButtonStart;
+
+    [SerializeField]
     public GameObject Fire;
     [SerializeField]
     public GameObject NoonWitch;
@@ -19,4 +22,22 @@ public class UIManager : MonoBehaviour {
     public GameObject ScreamStreakCount;
     [SerializeField]
     public GameObject GameInfoTxt;
+
+    public void hideUI()
+    {
+        ArrowDown.SetActive(false);
+        Fire.SetActive(false);
+        NoonWitch.SetActive(false);
+        Child.SetActive(false);
+        ScreamStreakCount.SetActive(false);
+    }
+
+    public void showUI()
+    {
+        ArrowDown.SetActive(true);
+        Fire.SetActive(true);
+        NoonWitch.SetActive(true);
+        Child.SetActive(true);
+        ScreamStreakCount.SetActive(true);
+    }
 }

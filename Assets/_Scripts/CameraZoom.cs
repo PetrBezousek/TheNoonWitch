@@ -24,10 +24,14 @@ public class CameraZoom : MonoBehaviour {
 
     public bool isGoingToThrowToys = false;
 
+    [SerializeField]
+    private UIManager UI;
+
     public void doCinematicNarative(List<string> _narative, Vector3 zoomPoint)
     {
         if (!GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().skipCinematics)
         {
+            UI.ArrowDown.SetActive(false);
             narative = _narative;
             zoomOnObject(zoomPoint);
         }
@@ -91,6 +95,9 @@ public class CameraZoom : MonoBehaviour {
 
     public void zoomOut()
     {
+
+        UI.ArrowDown.SetActive(true);
+
         isZoomedIn = false;
         
         //camera move

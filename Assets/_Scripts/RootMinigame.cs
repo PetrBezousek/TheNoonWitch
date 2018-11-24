@@ -12,12 +12,20 @@ public class RootMinigame : MonoBehaviour {
     [SerializeField]
     Text UIInfo;
 
+    [SerializeField]
+    GameObject particleSystem;
+
     [Space]
     [Header("How many keys player needs to click")]
     [SerializeField]
     int difficultyChildRoot = 6;
     [SerializeField]
     int difficultyEndgame = 6;
+
+    [Space]
+    [Header("How long till unroot after succesion")]
+    [SerializeField]
+    float secToUnrootIfSucceded = 1f;
 
     [Space]
     [Header("How long will be player rooted")]
@@ -41,7 +49,16 @@ public class RootMinigame : MonoBehaviour {
     [SerializeField]
     float moveBackwardX;
 
-    List<char> task;
+    List<GameObject> task;
+
+    [SerializeField]
+    GameObject taskParent;
+
+    [SerializeField]
+    GameObject left;
+
+    [SerializeField]
+    GameObject right;
 
     bool isTaskFailed = false;
 
@@ -69,17 +86,19 @@ public class RootMinigame : MonoBehaviour {
         {
             if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
-                if (task[0] == '←')
+                if (taskParent.transform.GetChild(0).GetComponent<Tag>().rootArrow == Tag.ArrowType.Left)
                 {
-                    task.RemoveAt(0);
-                    
-                    UIInfo.text = UpdatedUI(task);
-                  
+                    if(taskParent.transform.childCount >= 2)
+                    {
+                        GameObject highlight = Instantiate(particleSystem, taskParent.transform.GetChild(1), false);
+                        Destroy(taskParent.transform.GetChild(0).gameObject);
+                    }
 
-                    if (task.Count == 0) {
+                    if (taskParent.transform.childCount == 1) {
+                        Destroy(taskParent.transform.GetChild(0).gameObject);
                         if (isChildRoot)
                         {
-                            Unroot();
+                            TaskFinished("Success", "Unroot", secToUnrootIfSucceded);
                         }
                         else
                         {
@@ -92,6 +111,10 @@ public class RootMinigame : MonoBehaviour {
                 {
                     if (isChildRoot)
                     {
+                        foreach (Transform t in taskParent.transform)
+                        {
+                            Destroy(t.gameObject);
+                        }
                         TaskFinished("Fail!", "Unroot", secToUnrootIfFailed);
                     }
                     else
@@ -105,19 +128,20 @@ public class RootMinigame : MonoBehaviour {
 
             if (Input.GetKeyDown(KeyCode.RightArrow))
             {
-                if (task[0] == '→')
+                if (taskParent.transform.GetChild(0).GetComponent<Tag>().rootArrow == Tag.ArrowType.Right)
                 {
-                    task.RemoveAt(0);
-
-                   
-                    UIInfo.text = UpdatedUI(task);
-                    
-
-                    if (task.Count == 0)
+                    if (taskParent.transform.childCount >= 2)
                     {
+                        GameObject highlight = Instantiate(particleSystem, taskParent.transform.GetChild(1), false);
+                        Destroy(taskParent.transform.GetChild(0).gameObject);
+                    }
+
+                    if (taskParent.transform.childCount == 1)
+                    {
+                        Destroy(taskParent.transform.GetChild(0).gameObject);
                         if (isChildRoot)
                         {
-                            Unroot();
+                            TaskFinished("Success", "Unroot", secToUnrootIfSucceded);
                         }
                         else
                         {
@@ -133,6 +157,10 @@ public class RootMinigame : MonoBehaviour {
 
                     if (isChildRoot)
                     {
+                        foreach(Transform t in taskParent.transform)
+                        {
+                            Destroy(t.gameObject);
+                        }
                         TaskFinished("Fail", "Unroot", secToUnrootIfFailed);
                     }
                     else
@@ -148,89 +176,83 @@ public class RootMinigame : MonoBehaviour {
 
     private void TaskFinished(string msg, string invokeNext, float afterXSeconds)
     {
+        // TODO znic vsechny sipky
+
         isTaskFailed = true;
-        UIInfo.text = msg;
+       // UIInfo.text = msg;//todo delete, replace with smth
         Invoke(invokeNext, afterXSeconds);
-    }
-
-    private string UpdatedUI(List<char> task)
-    {
-
-        string s = "";
-        foreach (char character in task)
-        {
-            s += character;
-        }
-        if(s.Length > 1) { s = s.Insert(1, "   "); }
-        
-
-        return s;
     }
 
     public void MinigameStartsSoon()
     {
         //anim/sounds
-        UIInfo.text = "Root!";
+        //UIInfo.text = "Root!";
     }
 
-    private void Unroot()
+    public void Unroot()
     {
         enabled = false;
         GetComponent<MovementByUserInputHorizontal>().enabled = true;
+        if (GetComponent<MovementByUserInputHorizontal>().startChargedMove)
+        {
+            GetComponent<MovementByUserInputHorizontal>().anim.StartRunning();
+        }
         GetComponent<PickItems>().enabled = true;
         isTaskFailed = false;
-        UIInfo.text = "Released!";
         GameObject.FindGameObjectWithTag("ChildBody").GetComponent<AnimationSettingsChild>().StartChildGrabIdleBlend();
-        Invoke("ClearTxt", 1);
     }
 
     private void NewTask()
     {
-        task = new List<char>();
+        //reset task list
+        for (int i = 0; i < taskParent.transform.childCount; i++)
+        {
+            Destroy(taskParent.transform.GetChild(0));
+        }
 
         for (int i = 0; i < (isChildRoot ? difficultyChildRoot : difficultyEndgame); i++)
         {
             if (Random.Range(0, 2) == 0)
             {
-                task.Add('←');
+                GameObject arrow = Instantiate(left, taskParent.transform);
             }
             else
             {
-                task.Add('→');
+                GameObject arrow = Instantiate(right, taskParent.transform);
             }
         }
 
-        
-        UIInfo.text = UpdatedUI(task);
-
         isTaskFailed = false;
+
+        GameObject highlight = Instantiate(particleSystem, taskParent.transform.GetChild(0), false);
     }
 
     private void MovePlayerForwards()
     {
-        player.transform.position = new Vector3(
+        /*player.transform.position = new Vector3(
             player.transform.position.x + moveForwardX,
             player.transform.position.y,
-            player.transform.position.z);
+            player.transform.position.z);*/
+        player.DOMoveX(player.transform.position.x + moveForwardX, 1);
+        child.DOMoveX(player.transform.position.x + moveForwardX, 1);
     }
 
     private void MovePlayerBackwards()
     {
-        player.DOMoveX(player.transform.position.x - moveBackwardX, 1);
-        child.DOMoveX(player.transform.position.x - moveBackwardX, 1);
+        if(player.transform.position.x <= GetComponent<MovementByUserInputHorizontal>().boundXLeft - moveBackwardX)
+        {
+            player.DOMoveX(GetComponent<MovementByUserInputHorizontal>().boundXLeft, 1);
+            child.DOMoveX(GetComponent<MovementByUserInputHorizontal>().boundXLeft, 1);
+        }
+        else
+        {
+            player.DOMoveX(player.transform.position.x - moveBackwardX, 1);
+            child.DOMoveX(player.transform.position.x - moveBackwardX, 1);
+        }
         /*  player.transform.position = new Vector3(
               player.transform.position.x - moveBackwardX,
               player.transform.position.y,
               player.transform.position.z);*/
-    }
-
-    private void ClearTxt()
-    {
-        UIInfo.text = "";
-        if (OnChildRootEvent != null)
-        {
-            OnChildRootEvent();
-        }
     }
 
     private void OnDisable()
