@@ -37,6 +37,10 @@ public class AnimatorSettings : MonoBehaviour {
     [Range(0, 2)]
     float speedScream;
 
+    [SerializeField]
+    [Range(0, 2)]
+    float speedFalling;
+
     [SerializeField] Anima2D.SpriteMeshInstance chBody;
     [SerializeField] Anima2D.SpriteMeshInstance chHandLeft;
     [SerializeField] Anima2D.SpriteMeshInstance chHandRight;
@@ -76,6 +80,13 @@ public class AnimatorSettings : MonoBehaviour {
         anim.Play("PlayerScream");
         anim.speed = speedScream;
         currentAnim = "PlayerScream";
+    }
+    public void StartFalling()
+    {
+        //anim.Play("PlayerScream");
+        anim.Play("falling");
+        anim.speed = speedFalling;
+        currentAnim = "falling";
     }
     public void StartStayFinaly()
     {

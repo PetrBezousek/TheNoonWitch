@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.UI;
 
 public class WindowColision : MonoBehaviour {
 
@@ -25,11 +26,18 @@ public class WindowColision : MonoBehaviour {
     [SerializeField]
     public GameObject latch;
 
+    SoundManager sound;
+
     public bool isKnocking = false;
 
     public GameObject lastWindow;
 
     public bool isSpooking = false;
+
+    private void Awake()
+    {
+        sound = GameObject.FindGameObjectWithTag("SoundManager").GetComponent<SoundManager>();
+    }
 
     private void Start()
     {
@@ -62,6 +70,8 @@ public class WindowColision : MonoBehaviour {
             window.GetComponent<Window>().FrameClosed.GetComponent<DOTweenAnimation>().DORestartById("Knock");
             window.GetComponent<Window>().FrameClosed.GetComponent<DOTweenAnimation>().DOPlayById("Knock");
 
+            sound.PlaySound("windowKnock");
+
             Invoke("TryToOpenWindow", buchbuchTime);//wait 3 seconds (buch! buch)
         }
     }
@@ -76,36 +86,42 @@ public class WindowColision : MonoBehaviour {
 
     private void TryToOpenWindow()
     {
-        isKnocking = false;
         //stop animation
         lastWindow.GetComponent<Window>().FrameClosed.GetComponent<DOTweenAnimation>().DOPause();
-
-
-        GameObject logic = GameObject.FindGameObjectWithTag("GameLogic");
-
-        if(lastWindow.GetComponent<Window>().windowState != Window.State.Latched)
+        if (GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().currentPhase != GamePhases.Phase.EndGame_8)
         {
-            noonWitchWalking.SetActive(false);
-            noonWitchSpooking.SetActive(true);
+            isKnocking = false;
 
-            isSpooking = true;
 
-            //window is closed then (player cannot open windows)
-            lastWindow.GetComponent<Window>().ChangeStateTo(Window.State.Opened);
-            RaiseOnNoonWitchSpookEvent(true);
-        }
-        else
-        {
-            if (!isKnocking)
+            GameObject logic = GameObject.FindGameObjectWithTag("GameLogic");
+
+            if(lastWindow.GetComponent<Window>().windowState != Window.State.Latched)
             {
-                RaiseOnNoonWitchSpookEvent(false);
-                GetComponent<MovementBySimulatedInputHorizontal>().MoveToFarerPoint();
-                lastWindow = null;
+                noonWitchWalking.SetActive(false);
+                noonWitchSpooking.SetActive(true);
 
-                noonWitchSpooking.SetActive(false);
-                noonWitchWalking.SetActive(true);
+                sound.PlaySound("noonWitchScream");
+                isSpooking = true;
+
+                //window is closed then (player cannot open windows)
+                lastWindow.GetComponent<Window>().ChangeStateTo(Window.State.Opened);
+                RaiseOnNoonWitchSpookEvent(true);
+                
+                GameObject.FindGameObjectWithTag("Player").GetComponent<PickItems>().HighlightLatchStart();
             }
+            else
+            {
+                if (!isKnocking)
+                {
+                    RaiseOnNoonWitchSpookEvent(false);
+                    GetComponent<MovementBySimulatedInputHorizontal>().MoveToFarerPoint();
+                    lastWindow = null;
 
+                    noonWitchSpooking.SetActive(false);
+                    noonWitchWalking.SetActive(true);
+                }
+
+            }
         }
     }
 

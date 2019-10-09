@@ -10,17 +10,26 @@ public class Psyche : MonoBehaviour {
     public event OnPsycheChanged OnPsycheChangedEvent;
 
     [SerializeField]
+    private Animator mindAnimator;
+
+    [SerializeField]
+    [Range(0, 2)]
+    float speedMindChange;
+
+    [SerializeField]
     private GameObject UI;
 
     [Space]
     [Header("Maximum Psyche")]
     [SerializeField]
     public float psycheCurr = 100;
-    
+
+    public float psycheMax;
+
     private float fireplace = 0;
-    
+
     private float noonWitch = 0;
-    
+
     private float child = 0;
     [Space]
     [Header("psycheLoss/sec = (fireplace + noonWitch + child) * psycheLossSpeed")]
@@ -34,7 +43,7 @@ public class Psyche : MonoBehaviour {
     [Header("If fire is about to burn out")]
     [SerializeField]
     private float fireplace10Percent = 6;
-    
+
     [Header("If fire is burnt out")]
     [SerializeField]
     private float fireplace0Percent = 15;
@@ -48,17 +57,103 @@ public class Psyche : MonoBehaviour {
     [SerializeField]
     private float psycheLossSpeed = 1;
 
+    [Space]
+    [Header("VFX when something subtracts psyche")]
+    [SerializeField]
+    GameObject psychePSystem;
+    [SerializeField]
+    Transform psychePSystemFire;
+    [SerializeField]
+    Transform psychePSystemChild;
+    [SerializeField]
+    Transform psychePSystemNoonWitch;
+    [SerializeField]
+    Transform mind;
+
     // Use this for initialization
     void Start () {
-        
+        psycheMax = psycheCurr;
         InvokeRepeating("SubtractPsyche", 1f, 1f);
     }
 
+    [SerializeField]
+    private Color colorFire;
+    [SerializeField]
+    private Color colorChild;
+    [SerializeField]
+    private Color colorWitch;
+
+    [SerializeField]
+    private int fireplaceCounterMax = 3;
+    private int fireplaceCounter = 0;
+    [SerializeField]
+    private int noonwitchCounterMax = 3;
+    private int noonwitchCounter = 0;
+    /*
+    [SerializeField]
+    private int childCounterMax = 2;
+    private int childCounter = 0;*/
+
+    private int currState = 100;
+    private int lastState = 100;
+
+
+
     private void SubtractPsyche()
     {
-        if(!(GetComponent<GamePhases>().currentPhase == GamePhases.Phase.Start_1_DONT_USE))
+        if(!(GetComponent<GamePhases>().currentPhase == GamePhases.Phase.Start_1 ||
+            GetComponent<GamePhases>().currentPhase == GamePhases.Phase.EndGame_8 ||
+            GetComponent<GamePhases>().currentPhase == GamePhases.Phase.EndGameWin_9 ||
+            GetComponent<GamePhases>().currentPhase == GamePhases.Phase.EndGameLoose))
         {
-            float psycheLoss = (fireplace + noonWitch + child) * psycheLossSpeed;
+            float paramFireplace = fireplace;
+            float paramChild = child;
+            float paramNoonwitch = noonWitch;
+
+            var psEmission = psychePSystem.GetComponent<ParticleSystem>().emission;
+            var psRadius = psychePSystem.GetComponent<ParticleSystem>().shape;
+            var psColor = psychePSystem.GetComponent<ParticleSystem>().main;
+            if (fireplace > 0)
+            {
+                fireplaceCounter++;
+                // zvysim davku a zvetsim particle effect
+                if(fireplaceCounter == fireplaceCounterMax)
+                {
+                    fireplaceCounter = 0;
+                    paramFireplace *= 4;
+                }
+                psEmission.rateOverTime = (paramFireplace / 3);
+                //psRadius.radius = 0.01f * paramFireplace * 2;
+                psColor.startColor = colorFire;
+                GameObject effect = Instantiate(psychePSystem, psychePSystemFire);
+                effect.transform.DOMove(mind.position, 2).OnComplete(() => { effect.GetComponent<destroyItself>().destroySelf(); });
+            }
+            if (noonWitch > 0)
+            {
+                noonwitchCounter++;
+                // zvysim davku a zvetsim particle effect
+                if (noonwitchCounter == noonwitchCounterMax)
+                {
+                    noonwitchCounter = 0;
+                    paramNoonwitch *= 8;
+                }
+                psEmission.rateOverTime = (paramNoonwitch / 3);
+                //psRadius.radius = 0.01f * paramNoonwitch * 2;
+                psColor.startColor = colorWitch;
+                GameObject effect = Instantiate(psychePSystem, psychePSystemNoonWitch);
+                effect.transform.DOMove(mind.position, 2).OnComplete(() => { effect.GetComponent<destroyItself>().destroySelf(); });
+            }
+            if (child > 0)
+            {
+                psEmission.rateOverTime = paramChild / 3;
+                //psRadius.radius = 0.01f * paramChild * 2;
+                psColor.startColor = colorChild;
+                GameObject effect = Instantiate(psychePSystem, psychePSystemChild);
+                effect.transform.DOMove(mind.position, 2).OnComplete(() => { effect.GetComponent<destroyItself>().destroySelf(); });
+            }
+
+            float psycheLoss = (paramFireplace + paramNoonwitch + paramChild) * psycheLossSpeed;
+
             if (psycheCurr != psycheCurr - psycheLoss)
             {
                 if ((psycheCurr - psycheLoss) < 0)
@@ -66,17 +161,51 @@ public class Psyche : MonoBehaviour {
                     psycheCurr = 0;
 
                     CancelInvoke("SubtractPsyche");
-
+                    Debug.Log("Psyche < 0");
                     //zapni fázi
-                    GetComponent<GamePhases>().StartPhase(GamePhases.Phase.EndGame_8_DONT_USE);
+                    GetComponent<GamePhases>().StartPhase(GamePhases.Phase.EndGame_8);
 
                 }
                 else
                 {
                     psycheCurr -= psycheLoss;
                 }
+
+                UI.GetComponent<UIManager>().PsycheCounter.GetComponent<Text>().text = (Mathf.Round((psycheCurr / psycheMax) * 100)).ToString() + "%";
+
                 //event for status bars
-                OnPsycheChangedEvent(psycheCurr);
+                //OnPsycheChangedEvent(psycheCurr);
+
+                if (((psycheCurr / psycheMax) * 100) >= 50)
+                {
+                    currState = 100;
+                }
+                else if (((psycheCurr / psycheMax) * 100) >= 30)
+                {
+                    currState = 50;
+                }
+                else if (((psycheCurr / psycheMax) * 100) >= 15)
+                {
+                    currState = 30;
+                }
+                else if (((psycheCurr / psycheMax) * 100) >= 0)
+                {
+                    currState = 15;
+                }
+                else
+                {
+                    currState = 0;
+                }
+
+                if(currState != lastState)
+                {
+                    mind.gameObject.GetComponent<setColor>().updateColor();
+                    //mindAnimator.Play("mindChange", -1, 0f);
+                    //mindAnimator.speed = speedMindChange;
+                }
+
+                lastState = currState;
+
             }
         }
     }
@@ -91,7 +220,7 @@ public class Psyche : MonoBehaviour {
     public void SubscribeToNoonWitch(GameObject noonWitch)
     {
         noonWitch.GetComponent<WindowColision>().OnNoonWitchSpookEvent += Psyche_OnNoonWitchSpookEvent;
-    } 
+    }
     //Stop listening to item
     public void UnSubscribeToNoonWitch(GameObject noonWitch)
     {
@@ -106,7 +235,7 @@ public class Psyche : MonoBehaviour {
 
     private void Psyche_OnUpdateScreamingEvent(int screamStreak)
     {
-        
+
 
         if(screamStreak == 0)
         {
@@ -148,7 +277,7 @@ public class Psyche : MonoBehaviour {
         else
         {
             UI.GetComponent<UIManager>().NoonWitch.GetComponent<Image>().DOColor(new Color(1f, 0.941f, 0.667f, 0f),0.5f)
-                .OnComplete(() => { UI.GetComponent<UIManager>().NoonWitch.SetActive(false); }); 
+                .OnComplete(() => { UI.GetComponent<UIManager>().NoonWitch.SetActive(false); });
             noonWitch = 0;
         }
     }
@@ -168,6 +297,7 @@ public class Psyche : MonoBehaviour {
 
             UI.GetComponent<UIManager>().Fire.GetComponent<Image>().DOColor(new Color(0.533f, 0.486f, 0.686f, 0f), 0.5f)
                 .OnComplete(() => { UI.GetComponent<UIManager>().Fire.SetActive(false); });
+            fireplace = 0;
 
             //first warning UI (but player is not loosing psyche yet..)
             //UI.GetComponent<UIManager>().UIFire.GetComponent<Image>().color = new Color(0.533f, 0.486f, 0.686f, 0.8f);
@@ -190,7 +320,7 @@ public class Psyche : MonoBehaviour {
 
             fireplace = fireplace0Percent;
         }
-        
+
     }
 
     private void UIAnimChange(DOTweenAnimation tweenComponent)

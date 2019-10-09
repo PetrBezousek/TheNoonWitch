@@ -54,6 +54,22 @@ public class Child : MonoBehaviour {
     bool isInRange = false;
     RootMinigame minigame;
 
+    private void Update()
+    {
+        /*
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            foreach (GameObject toy in toys)
+            {
+                toy.GetComponent<InteractiveItem>().isPickable = true;//ano, hráč může chytit hračku v letu
+                toy.GetComponent<InteractiveItem>().SetOwner(null);
+                toy.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;//set back to static when player picks up toy
+                toy.GetComponent<Rigidbody2D>().AddForce(new Vector2(forceX, forceY));
+
+            }
+        }*/
+
+    }
 
     // Use this for initialization
     void Start () {
@@ -61,6 +77,14 @@ public class Child : MonoBehaviour {
         GameObject.FindGameObjectWithTag("GameLogic").GetComponent<Psyche>().SubscribeToChild(gameObject);
         
 	}
+
+    SoundManager sound;
+    // Use this for initialization
+    void Awake()
+    {
+        sound = GameObject.FindGameObjectWithTag("SoundManager").GetComponent<SoundManager>();
+    }
+
     public void SetNumberOfSkips(int num)
     {
         numberOfSkips = num;
@@ -81,7 +105,6 @@ public class Child : MonoBehaviour {
     }
     private void ScreamGraduates()
     {
-
         screamStreak++;
         if(screamStreak > -2)//možná udělat strop streaku, např. 4 s tím že od 3 už bude i chytat
         {
@@ -123,6 +146,7 @@ public class Child : MonoBehaviour {
         }
         else
         {
+            sound.PlaySound("childScream");
             anim.StartChildScream();
         }
 

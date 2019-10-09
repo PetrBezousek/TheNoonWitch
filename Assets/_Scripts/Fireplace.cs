@@ -65,7 +65,7 @@ public class Fireplace : MonoBehaviour {
     {
         float fuelLastUpdateTemp = fuelCurr;
 
-        if(GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().currentPhase != GamePhases.Phase.Start_1_DONT_USE)
+        if(GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().currentPhase != GamePhases.Phase.Start_1)
         {
             //if fire is burning
             if (fuelCurr > 0)
@@ -87,6 +87,7 @@ public class Fireplace : MonoBehaviour {
             pot.GetComponent<DOTweenAnimation>().DOPause();
 
             sound.StopSound("PotCooking");
+            sound.PlaySound("fireplaceRunOut");
 
             steamSettings.startColor = new Color(0.533f, 0.486f, 0.686f, 0f);
 
@@ -102,7 +103,7 @@ public class Fireplace : MonoBehaviour {
 
             pot.GetComponent<DOTweenAnimation>().DORewind();
             pot.GetComponent<DOTweenAnimation>().DOPause();
-            
+
             SoundManager.pot.volume = SoundManager.pot.volume / 2;
 
             fireAnim.DOPause();
@@ -128,7 +129,7 @@ public class Fireplace : MonoBehaviour {
              fireAnim.DOPlayById("50");
 
             OnReachingFuelTierEvent(50);
-           
+
         }
         if((fuelCurr > 50 && fuelCurr < 100) && !(fuelLastUpdate > 50 && fuelLastUpdate < 100))
         {
@@ -138,7 +139,7 @@ public class Fireplace : MonoBehaviour {
 
             pot.GetComponent<DOTweenAnimation>().DORestartById("Boiling");
             pot.GetComponent<DOTweenAnimation>().DOPlayById("Boiling");
-            
+
             sound.PlaySound("PotCooking");
 
             fireAnim.DOPause();
@@ -155,13 +156,13 @@ public class Fireplace : MonoBehaviour {
 
     public void AddWood(InteractiveItem.Names name)
     {
-        
+
 
         if(name == InteractiveItem.Names.WoodSmall)
         {
             OnWoodAddedEvent(true);
 
-            fuelCurr += 20;
+            fuelCurr += 25;
             fuelLastUpdate = 101;//to force an update
             if (fuelCurr > 100) { fuelCurr = 100; }
 
@@ -169,8 +170,8 @@ public class Fireplace : MonoBehaviour {
         if (name == InteractiveItem.Names.WoodBig)
         {
             OnWoodAddedEvent(false);
-            
-            fuelCurr += 50;
+
+            fuelCurr += 55;
             fuelLastUpdate = 101;//to force an update
             if (fuelCurr > 100) { fuelCurr = 100; }
 

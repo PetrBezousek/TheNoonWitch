@@ -6,6 +6,8 @@ using DG.Tweening;
 
 public class CameraZoom : MonoBehaviour {
 
+    public bool isCinematicPlaying = false;
+
     public float boundaryLeft;
     public float boundaryRight;
 
@@ -29,13 +31,30 @@ public class CameraZoom : MonoBehaviour {
 
     public void doCinematicNarative(List<string> _narative, Vector3 zoomPoint)
     {
-        if (!GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().skipCinematics)
+        if (!GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().skipCinematics && !isCinematicPlaying)
         {
+            isCinematicPlaying = true;
+            GameObject.FindGameObjectWithTag("SoundManager").GetComponent<SoundManager>().StopSound("Tap");
+            UI.hideUI();
             UI.ArrowDown.SetActive(false);
             narative = _narative;
             zoomOnObject(zoomPoint);
         }
-        
+    }
+
+
+    public void doCinematicNarative(List<string> _narative)
+    {
+        if (!GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().skipCinematics)
+        {
+            isCinematicPlaying = true;
+            GameObject.FindGameObjectWithTag("SoundManager").GetComponent<SoundManager>().StopSound("Tap");
+            UI.hideUI();
+            UI.ArrowDown.SetActive(false);
+            narative = _narative;
+            OnZoomedIn();
+        }
+
     }
 
     public void OnZoomedIn()
@@ -95,8 +114,11 @@ public class CameraZoom : MonoBehaviour {
 
     public void zoomOut()
     {
-
-        UI.ArrowDown.SetActive(true);
+        isCinematicPlaying = false;
+        if (GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().currentPhase != GamePhases.Phase.EndGame_8)
+        {
+            UI.showUI();
+        }
 
         isZoomedIn = false;
         

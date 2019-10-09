@@ -22,6 +22,7 @@ public class testerino : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        /*
         if (Input.GetKeyDown(KeyCode.Space))
         {
             Debug.Log("Shoot!");
@@ -34,6 +35,6 @@ public class testerino : MonoBehaviour {
         {
             Debug.Log("Reset");
             transform.position = new Vector3(positionX, positionY);
-        }
+        }*/
     }
 }

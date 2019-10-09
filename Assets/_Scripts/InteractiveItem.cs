@@ -24,6 +24,7 @@ public class InteractiveItem : MonoBehaviour {
 
     private void Update()
     {
+        /*
         if (GetComponent<DOTweenVisualManager>())
         {
             if (Input.GetKeyDown(KeyCode.A))
@@ -35,6 +36,7 @@ public class InteractiveItem : MonoBehaviour {
                 GetComponent<DOTweenVisualManager>().enabled = false;
             }
         }
+        */
     }
 
     // Use this for initialization

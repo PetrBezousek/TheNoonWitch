@@ -29,6 +29,8 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
 
     private float moveValue = 1;
 
+    public float maxFadeValue = 1;
+
     [Space]
     [Header("How long player needs to hold key to be able to dash (in sec)")]
     [SerializeField]
@@ -38,7 +40,7 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
     [Header("1 = 2sec hold key, dash for 2 sec ... 4 = 2sec hold key, dash for 0.5sec")]
     [SerializeField]
     private float timeHoldingKeyMultiplier = 1f;//1 = 2s držení tlačítka, 2s dash kupředu ... 0.5 = 2s, 1s
-    
+
     float delta;
     public float chargeMoveTime;
     public bool startChargedMove = false;
@@ -79,7 +81,7 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
 
         /*
          * Basic movement
-         * 
+         *
              moveValue = Input.GetAxis("Horizontal");
          if (moveValue != 0)
          {
@@ -87,95 +89,27 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
              transform.position = transform.position + (new Vector3(moveValue * speed, 0, 0)* Time.deltaTime);
          }*/
 
-
-        //Charged movement
-        if (!startChargedMove)
+        if (!GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraZoom>().isCinematicPlaying &&
+            !GameObject.FindGameObjectWithTag("Player").GetComponent<MovementToThePoint>().enabled)
         {
-            if (Input.GetKey(KeyCode.RightArrow))
+            //Charged movement
+            if (!startChargedMove)
             {
-                hideTutorArrows();
-                lastKey = KeyCode.RightArrow;
-                chargeMoveTime += Time.deltaTime * timeHoldingKeyMultiplier;//charging
-
-                if(chargeMoveTime > minSecondsHoldingKeyToDash)
+                if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
                 {
-                    anim.StartCharging();
-                    ObjectImagePositionScript.FlipX(true);
-                    dashMark.GetComponent<SpriteRenderer>().DOFade(1, 0.2f);
-                    // (transform.position.x + (chargeMoveTime*currSpeed))   .....   místo na které hráč dasahne
-                    if (transform.position.x + (chargeMoveTime * currSpeed) < boundXRight)
+                    if (GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().currentPhase != GamePhases.Phase.Start_1)
                     {
-                        dashMark.transform.position = new Vector3(transform.position.x + (chargeMoveTime * currSpeed), dashMark.transform.position.y);
+                        hideTutorArrows();
                     }
-                    else
+                    lastKey = KeyCode.RightArrow;
+                    chargeMoveTime += Time.deltaTime * timeHoldingKeyMultiplier;//charging
+
+                    if(chargeMoveTime > minSecondsHoldingKeyToDash)
                     {
-                        dashMark.transform.position = new Vector3(boundXRight, dashMark.transform.position.y);
-                    }
-                }
-
-            }else if(chargeMoveTime > minSecondsHoldingKeyToDash && lastKey == KeyCode.RightArrow)
-            {
-                //START charge right
-                sound.PlaySound("Tap");
-                anim.StartRunning();
-                ObjectImagePositionScript.FlipX(true);
-                moveValue = 1;
-                startChargedMove = true;
-            }
-
-
-            if (Input.GetKey(KeyCode.LeftArrow))
-            {
-                hideTutorArrows();
-                lastKey = KeyCode.LeftArrow;
-                chargeMoveTime += Time.deltaTime * timeHoldingKeyMultiplier;//charging
-
-                if (chargeMoveTime > minSecondsHoldingKeyToDash)
-                {
-                    anim.StartCharging();
-                    ObjectImagePositionScript.FlipX(false);
-                    dashMark.GetComponent<SpriteRenderer>().DOFade(1, 0.2f);
-                    // (transform.position.x - (chargeMoveTime*currSpeed))   .....   místo na které hráč dashne
-                    if (transform.position.x - (chargeMoveTime * currSpeed) > boundXLeft)
-                    {
-                        dashMark.transform.position = new Vector3(transform.position.x - (chargeMoveTime * currSpeed), dashMark.transform.position.y);
-                    }
-                    else
-                    {
-                        dashMark.transform.position = new Vector3(boundXLeft, dashMark.transform.position.y);
-                    }
-                }
-            }
-            else if (chargeMoveTime > minSecondsHoldingKeyToDash && lastKey == KeyCode.LeftArrow)
-            {
-                //START charge left
-                sound.PlaySound("Tap");
-                anim.StartRunning();
-                ObjectImagePositionScript.FlipX(false);
-                moveValue = -1;
-                startChargedMove = true;
-                
-            }
-        }
-        else //player is dashing
-        {
-            if (chargeMoveTime > 0)
-            {
-                //test if player hits boundary
-                v3 = transform.position + (new Vector3(moveValue * currSpeed, 0, 0) * Time.deltaTime);
-
-                if (v3.x > boundXRight || v3.x < boundXLeft)
-                {
-                    //stop
-                    Stop();
-                }
-                else
-                {
-                    //move
-                    transform.position = transform.position + (new Vector3(moveValue * currSpeed, 0, 0) * Time.deltaTime);
-                    chargeMoveTime -= Time.deltaTime;
-                    if(moveValue > 0)
-                    {
+                        anim.StartCharging();
+                        ObjectImagePositionScript.FlipX(true);
+                        dashMark.GetComponent<SpriteRenderer>().DOFade(maxFadeValue, 0.2f);
+                        // (transform.position.x + (chargeMoveTime*currSpeed))   .....   místo na které hráč dasahne
                         if (transform.position.x + (chargeMoveTime * currSpeed) < boundXRight)
                         {
                             dashMark.transform.position = new Vector3(transform.position.x + (chargeMoveTime * currSpeed), dashMark.transform.position.y);
@@ -185,8 +119,33 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
                             dashMark.transform.position = new Vector3(boundXRight, dashMark.transform.position.y);
                         }
                     }
-                    else
+
+                }else if(chargeMoveTime > minSecondsHoldingKeyToDash && lastKey == KeyCode.RightArrow)
+                {
+                    //START charge right
+                    sound.PlaySound("Tap");
+                    anim.StartRunning();
+                    ObjectImagePositionScript.FlipX(true);
+                    moveValue = 1;
+                    startChargedMove = true;
+                }
+
+
+                if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+                {
+                    if (GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().currentPhase != GamePhases.Phase.Start_1)
                     {
+                        hideTutorArrows();
+                    }
+                    lastKey = KeyCode.LeftArrow;
+                    chargeMoveTime += Time.deltaTime * timeHoldingKeyMultiplier;//charging
+
+                    if (chargeMoveTime > minSecondsHoldingKeyToDash)
+                    {
+                        anim.StartCharging();
+                        ObjectImagePositionScript.FlipX(false);
+                        dashMark.GetComponent<SpriteRenderer>().DOFade(maxFadeValue, 0.2f);
+                        // (transform.position.x - (chargeMoveTime*currSpeed))   .....   místo na které hráč dashne
                         if (transform.position.x - (chargeMoveTime * currSpeed) > boundXLeft)
                         {
                             dashMark.transform.position = new Vector3(transform.position.x - (chargeMoveTime * currSpeed), dashMark.transform.position.y);
@@ -196,15 +155,64 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
                             dashMark.transform.position = new Vector3(boundXLeft, dashMark.transform.position.y);
                         }
                     }
-                    
+                }
+                else if (chargeMoveTime > minSecondsHoldingKeyToDash && lastKey == KeyCode.LeftArrow)
+                {
+                    //START charge left
+                    sound.PlaySound("Tap");
+                    anim.StartRunning();
+                    ObjectImagePositionScript.FlipX(false);
+                    moveValue = -1;
+                    startChargedMove = true;
                 }
             }
-            else
+            else //player is dashing
             {
-                Stop();
+                if (chargeMoveTime > 0)
+                {
+                    //test if player hits boundary
+                    v3 = transform.position + (new Vector3(moveValue * currSpeed, 0, 0) * Time.deltaTime);
+
+                    if (v3.x > boundXRight || v3.x < boundXLeft)
+                    {
+                        //stop
+                        Stop();
+                    }
+                    else
+                    {
+                        //move
+                        transform.position = transform.position + (new Vector3(moveValue * currSpeed, 0, 0) * Time.deltaTime);
+                        chargeMoveTime -= Time.deltaTime;
+                        if(moveValue > 0)
+                        {
+                            if (transform.position.x + (chargeMoveTime * currSpeed) < boundXRight)
+                            {
+                                dashMark.transform.position = new Vector3(transform.position.x + (chargeMoveTime * currSpeed), dashMark.transform.position.y);
+                            }
+                            else
+                            {
+                                dashMark.transform.position = new Vector3(boundXRight, dashMark.transform.position.y);
+                            }
+                        }
+                        else
+                        {
+                            if (transform.position.x - (chargeMoveTime * currSpeed) > boundXLeft)
+                            {
+                                dashMark.transform.position = new Vector3(transform.position.x - (chargeMoveTime * currSpeed), dashMark.transform.position.y);
+                            }
+                            else
+                            {
+                                dashMark.transform.position = new Vector3(boundXLeft, dashMark.transform.position.y);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Stop();
+                }
             }
         }
-        
     }
 
     public void Stop()
@@ -226,7 +234,7 @@ public class MovementByUserInputHorizontal : MonoBehaviour {
     {
         //unsubscribe from Update
         GameObject.FindGameObjectWithTag("GameLogic").GetComponent<UpdateManager>().OnUpdateEvent -= UpdateManager_OnUpdateEvent;
-       
+
     }
     private void OnEnable()
     {

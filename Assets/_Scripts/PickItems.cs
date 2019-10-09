@@ -15,6 +15,8 @@ public class PickItems : MonoBehaviour {
     public delegate void OnLatchWindow();
     public event OnLatchWindow OnLatchWindowEvent;
 
+    SoundManager sound;
+
     [SerializeField]
     UIManager UI;
 
@@ -41,6 +43,11 @@ public class PickItems : MonoBehaviour {
 
     [SerializeField]
     private GamePhases gamePhases;
+
+    private void Awake()
+    {
+        sound = GameObject.FindGameObjectWithTag("SoundManager").GetComponent<SoundManager>();
+    }
 
     //Update
     private void PickItems_OnUpdateEvent()
@@ -73,7 +80,7 @@ public class PickItems : MonoBehaviour {
                 theClosestPlace = null;
             }
         }
-        if (Input.GetKeyDown(KeyCode.DownArrow))
+        if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
         {
             //both have nullcheck
             UsePlace();
@@ -175,7 +182,7 @@ public class PickItems : MonoBehaviour {
                 equipedItem = theClosestPickable;
                 theClosestPickable = temp;
 
-                //prohodím pozice fyzicky      
+                //prohodím pozice fyzicky     
                 theClosestPickable.transform.parent = null;
 
                 if(equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch)
@@ -187,7 +194,14 @@ public class PickItems : MonoBehaviour {
                 }
                 else
                 {
-                    theClosestPickable.transform.position = equipedItem.transform.position;
+                    if (theClosestPickable.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Husar)
+                    {
+                        theClosestPickable.transform.position = new Vector3(equipedItem.transform.position.x, Random.Range(-2.6f, -2.3f));
+                    }
+                    else
+                    {
+                        theClosestPickable.transform.position = new Vector3(equipedItem.transform.position.x, Random.Range(-2.8f, -2.4f));
+                    }
                 }
 
                 SetEquipedItemToPosition(playersHand.transform);
@@ -274,15 +288,19 @@ public class PickItems : MonoBehaviour {
         }
         //noonwitch
         if ((place.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Noonwitch)
-        && (GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().currentPhase == GamePhases.Phase.EndGame_8_DONT_USE))
+        && (GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().currentPhase == GamePhases.Phase.EndGame_8))
         {
+
+            GameObject.FindGameObjectWithTag("NoonWitch").transform.DOPause();
             //gameover
             GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().StartPhase(GamePhases.Phase.EndGameLoose);
             //narative
+            /*
             GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraZoom>().doCinematicNarative(
                 new List<string>() { "Pro Kristovu drahou muku!", "klesá smyslů zbavena."  },
                 GameObject.FindGameObjectWithTag("PlayerHead").transform.position);
-            Invoke("showResetBtn", 4f);
+                */
+            // Invoke("showResetBtn", 4f);
 
             return false;
         }
@@ -293,14 +311,28 @@ public class PickItems : MonoBehaviour {
 
     private void showResetBtn()
     {
-        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().btnReset.GetComponent<Button>().interactable = true;
-        GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().btnReset.GetComponent<Image>().DOFade(1, 1);
+        UI.showStartUpStuffExceptItsRestart();
+
+
+        //GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().btnReset.GetComponent<Button>().interactable = true;
+        //GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().btnReset.GetComponent<Image>().DOFade(1, 1);
+    }
+
+    public void HighlightLatchStart()
+    {
+        gamePhases.itsTimeForHighligtingLatch = true;
+
+        InvokeRepeating("HighlightLatch", 5, 3);
     }
 
     private void HighlightLatch()
     {
         if (gamePhases.itsTimeForHighligtingLatch && ((equipedItem != null && equipedItem.GetComponent<InteractiveItem>().name != InteractiveItem.Names.Latch) || equipedItem == null))
         {
+            if(GameObject.FindGameObjectWithTag("GameLogic").GetComponent<GamePhases>().currentPhase == GamePhases.Phase.Latch_4)
+            {
+                UI.GameInfoTxt.GetComponent<Text>().DOText(Txt.zablokujOkno, 1); 
+            }
             gamePhases.HighlightItem(latch);
         }
         else
@@ -322,9 +354,13 @@ public class PickItems : MonoBehaviour {
                     case InteractiveItem.Names.Fireplace:
                         theClosestPlace.GetComponent<Fireplace>().AddWood(equipedItem.GetComponent<InteractiveItem>().name);
                         Destroy(equipedItem);
+
+                        sound.PlaySound("addWood");
+                        
                         equipedItem = null;
                         break;
                     case InteractiveItem.Names.Window:
+                        sound.PlaySound("windowClose");
                         if (equipedItem != null && equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Latch)
                         {
                             gamePhases.itsTimeForHighligtingLatch = false;
@@ -336,9 +372,6 @@ public class PickItems : MonoBehaviour {
                         }
                         else
                         {
-                            gamePhases.itsTimeForHighligtingLatch = true;
-
-                            InvokeRepeating("HighlightLatch", 2, 2);
                         }
 
 
@@ -370,15 +403,18 @@ public class PickItems : MonoBehaviour {
                         {
                             if (OnChildGotAllToysEvent != null)
                             {
+
+                                sound.PlaySound("childGotToys");
                                 OnChildGotAllToysEvent();
                             }
                         }
 
-                        theClosestPlace.GetComponent<Child>().CheckScream();
+                        //theClosestPlace.GetComponent<Child>().CheckScream();
                
                         
                         //position
                         equipedItem.transform.parent = theClosestPlace.transform;
+                        equipedItem.GetComponent<SpriteRenderer>().sortingLayerName = "Items";
                         if (equipedItem.GetComponent<InteractiveItem>().name == InteractiveItem.Names.Husar)
                         {
                             equipedItem.transform.localPosition = new Vector3(-2, 0, 0);
@@ -438,7 +474,7 @@ public class PickItems : MonoBehaviour {
             equipedItem.transform.parent = newParent;
             equipedItem.transform.localPosition = new Vector3(0, 0, 0);
             equipedItem.GetComponent<SpriteRenderer>().sortingLayerName = "Player";
-            equipedItem.GetComponent<SpriteRenderer>().sortingOrder = 1007;//Between FHand1 a 2
+            equipedItem.GetComponent<SpriteRenderer>().sortingOrder = 1005;//Behind FHand1 a 2
         }
     }
 

@@ -34,6 +34,9 @@ public class AnimationSettingsChild : MonoBehaviour {
     [SerializeField]
     [Range(0, 2)]
     float speedPlayerHoldsChildLoop;
+    [SerializeField]
+    [Range(0, 2)]
+    float speedChildFallsWithMother;
 
 
     private string currentAnim;
@@ -52,6 +55,14 @@ public class AnimationSettingsChild : MonoBehaviour {
         anim.speed = speedIdle;
         currentAnim = "ChildIdle";
     }
+
+    public void StartChildFalling()
+    {
+        anim.Play("ChildFallsWithMother");
+        anim.speed = speedChildFallsWithMother;
+        currentAnim = "ChildFallsWithMother";
+    }
+
     public void StartChildScream()
     {
         if (currentAnim == "ChildIdle")
